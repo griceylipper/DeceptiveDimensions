@@ -1,30 +1,27 @@
 /*
 
-Quantum Conundrum Demake
-	Roy Mullay 2014
+DECEPTIVE DIMENSIONS
+	A Quantum Conundrum Demake
+		Roy Mullay 2014
 	
-
+*** REFERENCES ***
+http://www.gamedev.net/page/resources/_/technical/game-programming/the-guide-to-implementing-2d-platformers-r2936
+http://www.coranac.com/tonc/text/fixed.htm
+******************
+	
 *** TO DO LIST: ***
 
 (Note - this is a VERY ROUGH order of how I want to do things;
  follow it roughly, but do not treat this order as gospel!)
 
 Bug fixes:
-
--Solve -0.5 < velocity < 0.5 problem (aka Peach from SMB2 unintended umbrella)
-	-Found solution! Read this:
-	http://www.coranac.com/tonc/text/fixed.htm
-	-Also for more features:
-	http://www.gamedev.net/page/resources/_/technical/game-programming/the-guide-to-implementing-2d-platformers-r2936
+-Stop player randomly drifting left across the floor
+	-Note: this sometimes happens when you press the RIGHT button - WTF?!
+	-Probably related: stop player from travelling faster left to right than right to left
 
 Clean-up:
 
--Get to grips with how "multiply everything by 10" update actually works.
-	-Consider changing values of gravity to make more sense.
--Abolish terminal y-velocity when moving upwards.
-	-However, consider how this will affect reverse gravity dimensions in future.
 -Divide ApplyButtons function to separate gathering input from data manipulation
--Move player off-screen logic to Character class.
 -Figure out constructors for classes - which are really necessary?
 -Start making data and methods private in classes.
 -Restrict jumping so double jumping is impossible
@@ -48,15 +45,20 @@ New features:
 *******************
 
 *** CHANGE LOG ***
-
-Start of log 2014/03/10
-
--Constructed Object class
--Constructed Entity class
--Constructed Player class
--Basis for Main game loop
-	-VERY CRUDE movement - needs tidying
-	-Still messy and uncommented
+	
+2014/03/11
+-Moved player off-screen logic to Character class.
+-Decided against abolishing terminal y-velocity when moving upwards.
+	-Too much hassle to deal with considering reverse gravity dimension.
+-Kind of got to grips with how "multiply everything by 10" update actually works.
+	-Changed gravity calculation to use a multiplier instead of divisor to make more sense.
+-Solved -0.5 < velocity < 0.5 problem (aka Peach from SMB2 unintended umbrella)
+	-Found solution! Read this:
+	http://www.coranac.com/tonc/text/fixed.htm
+	-i.e. I changed division to shift operations - works way better
+	-Also made scaling factor 8 instead of 10 for convenience
+	-However, weird drifting bug created as well
+-Making as much data private as possible - still more to be done
 
 */
 
@@ -147,33 +149,14 @@ int main()
 	{
 		uint16_t curButtons = REG_KEYINPUT;
 		
-		player.ApplyButtons(curButtons, prevButtons);
+		player.ReadButtons(curButtons, prevButtons);
 		player.ApplyGravity();
 		player.ApplyVelocity();
-				
-		if (player.x < 0)
-		{
-			player.x = 0;
-		}
+		player.CheckOnScreen();
 		
-		if (player.Right() > SCREEN_WIDTH)
-		{
-			player.x = SCREEN_WIDTH - player.width;
-		}
-		
-		if (player.y < 0)
-		{
-			player.y = 0;
-		}
-		
-		if (player.Bottom() > SCREEN_HEIGHT)
-		{
-			player.y = SCREEN_HEIGHT - player.height;
-		}
-		
-		SetObject(player.objnum,
-		  ATTR0_SHAPE(2) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(player.y),
-		  ATTR1_SIZE(0) | ATTR1_X(player.x),
+		SetObject(player.GetObjNum(),
+		  ATTR0_SHAPE(2) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(player.Gety()),
+		  ATTR1_SIZE(0) | ATTR1_X(player.Getx()),
 		  ATTR2_ID8(0));
 
 		frameCounter++;

@@ -8,13 +8,10 @@
 class Entity : public Object
 {	
 	private:
-		//Data
-
-		
-		//Methods
 		void ApplyTerminal();
-
-	public:
+		void Reset(int, int, int, int, int, int, int, int, int);
+	
+	protected:
 		//Data
 		int xVel;
 		int yVel;
@@ -22,15 +19,19 @@ class Entity : public Object
 		int objnum;
 		int weight;
 		int terminalx;
-		int terminaly;		
+		int terminaly;
 		
 		//Methods
 		Entity();
+		
+	public:
+		//Methods
 		Entity(int, int, int, int, int, int, int, int, int);
-		void Reset(int, int, int, int, int, int, int, int, int);
 		void ApplyGravity();
 		void ApplyVelocity();
 		void ReverseGravity();
+		int GetObjNum();
+		
 };
 
 #endif

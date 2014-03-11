@@ -5,21 +5,26 @@
 
 class Object
 {	
-	public:
+	protected:
 		//Data
 		int x;			//Position of left edge
 		int y;			//Position of top edge
 		int width;		//Width of object in pixels
 		int height;		//Height of object in pixels
 		
-		//Functions
-		Object();
-		Object(int, int, int, int);
+		//Methods
+		Object();		
 		void Reset();
 		void Reset(int, int, int, int);
+		
+	public:
+		//Methods
+		Object(int, int, int, int);
 		void Move(int, int);
-		int Right();
-		int Bottom();
+		int Getx();
+		int Gety();
+		int GetRight();
+		int GetBottom();
 };
 
 #endif

@@ -8,6 +8,10 @@
 
 class Character : public Entity
 {
+	private:
+		int accel;
+		int decel;
+	
 	public:
 		//Data
 		int spawnx;
@@ -16,8 +20,10 @@ class Character : public Entity
 		//Functions
 		Character(int, int, int, int, int, int, int, int, int, int, int);
 		void Reset(int, int, int, int, int, int, int, int, int, int, int);
-		void ApplyButtons(uint16_t, uint16_t);
+		void ReadButtons(uint16_t, uint16_t);
 		void Jump();
+		void CheckOnScreen();
+		void Spawn();
 };
 
 #endif

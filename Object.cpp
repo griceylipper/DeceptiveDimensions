@@ -39,14 +39,25 @@ void Object::Move(int a, int b)
 	y = b;
 }
 
+//Returns x-position of object
+int Object::Getx()
+{
+	return x;
+}
+
+int Object::Gety()
+{
+	return y;
+}
+
 //Returns x-position of right hand edge of the Object
-int Object::Right()
+int Object::GetRight()
 {
 	return x + width;
 }
 
 //Returns y-position of bottom edge of the Object
-int Object::Bottom()
+int Object::GetBottom()
 {
 	return y + height;
 }
