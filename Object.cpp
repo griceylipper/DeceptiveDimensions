@@ -32,6 +32,31 @@ void Object::Reset(int a, int b, int w, int h)
 	height = h;
 }
 
+//Returns true if Object a collides with Object
+bool Object::IsColliding(Object a)
+{
+	//If any sides of a are outside b
+	if (a.GetBottom() <= Gety())
+	{
+		return false;
+	}
+	if (a.Gety() >= GetBottom())
+	{
+		return false;
+	}
+	if (a.GetRight() <= Getx())
+	{
+		return false;
+	}
+	if (a.Getx() >= GetRight())
+	{
+		return false;
+	}
+	
+	//If none of the sides of a are outside b,
+	return true;
+}
+
 //Moves object to coordinates (a, b)
 void Object::Move(int a, int b)
 {

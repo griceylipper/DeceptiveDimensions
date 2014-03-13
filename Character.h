@@ -20,7 +20,7 @@ class Character : public Entity
 		//Functions
 		Character(int, int, int, int, int, int, int, int, int, int, int);
 		void Reset(int, int, int, int, int, int, int, int, int, int, int);
-		void ReadButtons(uint16_t, uint16_t);
+		void ReadButtons(uint16_t, uint16_t, Object);
 		void Jump();
 		void CheckOnScreen();
 		void Spawn();

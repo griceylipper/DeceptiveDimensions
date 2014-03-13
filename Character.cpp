@@ -28,7 +28,7 @@ void Character::Reset(int a, int b, int w, int h, int xV, int yV, int g, int W, 
 	decel = 3;
 }
 
-void Character::ReadButtons(uint16_t curButtons, uint16_t prevButtons)
+void Character::ReadButtons(uint16_t curButtons, uint16_t prevButtons, Object obstacle)
 {
 	//Sideways motion. Gives character slight slideyness.
 	//Accelerating
@@ -43,22 +43,22 @@ void Character::ReadButtons(uint16_t curButtons, uint16_t prevButtons)
 	//Decelerating
 	else
 	{
-		if (xVel > 0)
+		if (xVel > 4)	//Due to bit shift negative bias, moonwalk happens if value is 0
 		{
 			xVel -= decel;
 		}
-		else if (xVel < 0)
+		else if (xVel < 4)
 		{
 			xVel += decel;
 		}
 		else
 		{
-			xVel = 0;
+			xVel = 4;
 		}
 	}
 	
 	//Jumping
-	if (((curButtons & KEY_A) == 0) && ((prevButtons & KEY_A) != 0))
+	if (((curButtons & KEY_A) == 0) && ((prevButtons & KEY_A) != 0) && (IsColliding(obstacle)))
 	{
 		Jump();
 	}

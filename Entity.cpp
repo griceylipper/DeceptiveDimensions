@@ -44,7 +44,7 @@ void Entity::Reset(int a, int b , int w, int h, int xV, int yV, int g, int W, in
 //Applies the acceleration of gravity to the objects current velocity
 void Entity::ApplyGravity()
 {
-	yVel += (gravity * 0.5);	//Higher multiplier = higher gravity; lowest practical value = 0.25
+	yVel += gravity * 0.5;	//Higher multiplier = higher gravity; lowest practical value = 0.25
 }
 
 //Applies the velocities of objects to their positions
@@ -55,7 +55,6 @@ void Entity::ApplyVelocity()
 	y += (yVel >> 3);
 	// x += (xVel / 8);
 	// y += (yVel / 8);
-	
 }
 
 //Set velocities = terminal if they exceed them.
@@ -69,7 +68,7 @@ void Entity::ApplyTerminal()
 		}
 		else
 		{
-			xVel = -terminalx;
+			xVel = -terminalx + 16; //Bit shift negative bias means character goes to the left quicker without offset. 
 		}
 	}
 	if (abs(yVel) > terminaly)

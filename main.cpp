@@ -15,16 +15,12 @@ http://www.coranac.com/tonc/text/fixed.htm
  follow it roughly, but do not treat this order as gospel!)
 
 Bug fixes:
--Stop player randomly drifting left across the floor
-	-Note: this sometimes happens when you press the RIGHT button - WTF?!
-	-Probably related: stop player from travelling faster left to right than right to left
+
 
 Clean-up:
-
--Divide ApplyButtons function to separate gathering input from data manipulation
+-Do jumping properly
 -Figure out constructors for classes - which are really necessary?
 -Start making data and methods private in classes.
--Restrict jumping so double jumping is impossible
 -Finalise interaction between GBA objects and my own Objects
 -ANNOTATE MORE CODE - This will be good practice to retain understanding of this after a break in coding.
 
@@ -33,8 +29,10 @@ New features:
 -Get player animation working
 -Add platforms
 	-Ask for advice on whether to create separate classes for them or just use Object class
+	-Figure out how to go about drawing them
 -Consider having a collision box for player that is smaller than character graphics
 -Add background graphics.
+	-Take a look at Prince of Persia - work out if oblique angle is practical to implement using tiles.
 	-Maybe ask whether Kirsteen can provide graphics
 	-Implement scrolling backgrounds
 		-Make player stay in middle of screen when moving around level.
@@ -46,20 +44,13 @@ New features:
 
 *** CHANGE LOG ***
 	
-2014/03/11
--Moved player off-screen logic to Character class.
--Decided against abolishing terminal y-velocity when moving upwards.
-	-Too much hassle to deal with considering reverse gravity dimension.
--Kind of got to grips with how "multiply everything by 10" update actually works.
-	-Changed gravity calculation to use a multiplier instead of divisor to make more sense.
--Solved -0.5 < velocity < 0.5 problem (aka Peach from SMB2 unintended umbrella)
-	-Found solution! Read this:
-	http://www.coranac.com/tonc/text/fixed.htm
-	-i.e. I changed division to shift operations - works way better
-	-Also made scaling factor 8 instead of 10 for convenience
-	-However, weird drifting bug created as well
--Making as much data private as possible - still more to be done
-
+2014/03/12
+-Added IsColliding function to Character class
+-Restricted jumping so double jumping is impossible - a temporary method for the moment
+-Stopped player randomly drifting left across the floor
+	-Note: this sometimes happens when you press the RIGHT button - WTF?!
+	-Probably related: stop player from travelling faster left to right than right to left
+	-These were problems because of bit shift negative bias.
 */
 
 #include <stdint.h>
@@ -71,6 +62,8 @@ New features:
 #include "Entity.h"
 #include "Character.h"
 
+//Function prototypes
+void SetObject(Entity);
 
 // A blank tile.
 // See the palette below for what the colour numbers mean.
@@ -139,6 +132,7 @@ int main()
 	ClearObjects();
 	
 	Character player(116, 76, 8, 16, 0, 0, 4, 1, 0, 8, 8);
+	Object platform(0, SCREEN_HEIGHT - 1, SCREEN_WIDTH, 1);
 
 	uint16_t prevButtons = 0;
 	
@@ -149,7 +143,7 @@ int main()
 	{
 		uint16_t curButtons = REG_KEYINPUT;
 		
-		player.ReadButtons(curButtons, prevButtons);
+		player.ReadButtons(curButtons, prevButtons, platform);
 		player.ApplyGravity();
 		player.ApplyVelocity();
 		player.CheckOnScreen();
@@ -168,4 +162,13 @@ int main()
 	}
 
 	return 0;
+}
+
+//Functions
+void SetObject(Entity a)
+{
+	SetObject(a.GetObjNum(),
+	  ATTR0_SHAPE(2) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(a.Gety()),
+	  ATTR1_SIZE(0) | ATTR1_X(a.Getx()),
+	  ATTR2_ID8(0));
 }

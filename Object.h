@@ -16,6 +16,7 @@ class Object
 		Object();		
 		void Reset();
 		void Reset(int, int, int, int);
+		bool IsColliding(Object);
 		
 	public:
 		//Methods
