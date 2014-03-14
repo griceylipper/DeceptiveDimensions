@@ -17,6 +17,7 @@ class Object
 		void Reset();
 		void Reset(int, int, int, int);
 		bool IsColliding(Object);
+		bool IsTouching(Object);
 		
 	public:
 		//Methods

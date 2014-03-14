@@ -43,22 +43,22 @@ void Character::ReadButtons(uint16_t curButtons, uint16_t prevButtons, Object ob
 	//Decelerating
 	else
 	{
-		if (xVel > 4)	//Due to bit shift negative bias, moonwalk happens if value is 0
+		if (xVel > STATIONARY)
 		{
 			xVel -= decel;
 		}
-		else if (xVel < 4)
+		else if (xVel < STATIONARY)
 		{
 			xVel += decel;
 		}
 		else
 		{
-			xVel = 4;
+			xVel = STATIONARY;
 		}
 	}
 	
 	//Jumping
-	if (((curButtons & KEY_A) == 0) && ((prevButtons & KEY_A) != 0) && (IsColliding(obstacle)))
+	if (((curButtons & KEY_A) == 0) && ((prevButtons & KEY_A) != 0) && (yVel >= 0) && (yVel < 8) && (IsTouching(obstacle)))
 	{
 		Jump();
 	}

@@ -48,13 +48,35 @@ void Entity::ApplyGravity()
 }
 
 //Applies the velocities of objects to their positions
-void Entity::ApplyVelocity()
+void Entity::ApplyVelocity(Object obstacle)
 {
 	ApplyTerminal();
-	x += (xVel >> 3);	//Use of shift operation fixes problems when -4 < yVel < 4
+	x += (xVel >> 3);	//Use of shift operation fixes problems with dividing when -4 < yVel < 4
+	while (true)
+	{
+		if (!IsColliding(obstacle))	//If not colliding with any obstacle, allow movement
+		{
+			break;
+		}
+		else
+		{
+			x -= (PlusOrMinus(xVel));	//Move the entity back until it is no longer colliding
+		}
+		xVel = STATIONARY;
+	}
 	y += (yVel >> 3);
-	// x += (xVel / 8);
-	// y += (yVel / 8);
+	while (true)
+	{
+		if (!IsColliding(obstacle))
+		{
+			break;
+		}
+		else
+		{
+			y -= (PlusOrMinus(yVel));
+		}
+		yVel = STATIONARY;
+	}
 }
 
 //Set velocities = terminal if they exceed them.
@@ -79,7 +101,7 @@ void Entity::ApplyTerminal()
 		}
 		else
 		{
-			yVel = -terminaly;
+			yVel = -terminaly + 16;
 		}
 	}
 }
@@ -94,4 +116,21 @@ void Entity::ReverseGravity()
 int Entity::GetObjNum()
 {
 	return objnum;
+}
+
+//Returns sign of x
+int Entity::PlusOrMinus(int x)
+{
+	if (x > 0)
+	{
+		return 1;
+	}
+	else if (x < 0)
+	{
+		return -1;
+	}
+	else
+	{
+		return 0;
+	}
 }
