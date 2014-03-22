@@ -12,21 +12,21 @@ class Object
 		int width;		//Width of object in pixels
 		int height;		//Height of object in pixels
 		
-		//Methods
-		Object();		
+		//Methods	
 		void Reset();
-		void Reset(int, int, int, int);
-		bool IsColliding(Object);
 		bool IsTouching(Object);
+		void Move(int, int);
 		
 	public:
 		//Methods
+		Object();
 		Object(int, int, int, int);
-		void Move(int, int);
+		void Reset(int, int, int, int);
 		int Getx();
 		int Gety();
 		int GetRight();
 		int GetBottom();
+		bool IsColliding(Object);
 };
 
 #endif

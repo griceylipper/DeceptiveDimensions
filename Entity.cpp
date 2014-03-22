@@ -1,6 +1,7 @@
 //Entity.cpp
 
 #include "Entity.h"
+#include "Level.h"
 #include <cstdlib>
 
 // //Functions
@@ -51,7 +52,7 @@ void Entity::ApplyGravity()
 void Entity::ApplyVelocity(Object obstacle)
 {
 	ApplyTerminal();
-	x += (xVel >> 3);	//Use of shift operation fixes problems with dividing when -4 < yVel < 4
+	x += (xVel >> 3);	//Use of shift operation fixes problems with dividing when -4 < Vel < 4
 	while (true)
 	{
 		if (!IsColliding(obstacle))	//If not colliding with any obstacle, allow movement
@@ -64,6 +65,7 @@ void Entity::ApplyVelocity(Object obstacle)
 		}
 		xVel = STATIONARY;
 	}
+
 	y += (yVel >> 3);
 	while (true)
 	{
@@ -76,6 +78,44 @@ void Entity::ApplyVelocity(Object obstacle)
 			y -= (PlusOrMinus(yVel));
 		}
 		yVel = STATIONARY;
+	}
+}
+
+void Entity::ApplyVelocity(Level level)
+{
+	ApplyTerminal();
+	x += (xVel >> 3);	//Use of shift operation fixes problems with dividing when -4 < Vel < 4
+	for (int i = 0; i < level.numofplatforms; i++)
+	{
+		while (true)
+		{
+			if (!IsColliding(level.platform[i]))	//If not colliding with any obstacle, allow movement
+			{
+				break;
+			}
+			else
+			{
+				x -= (PlusOrMinus(xVel));	//Move the entity back until it is no longer colliding
+			}
+			xVel = STATIONARY;
+		}
+	}
+	
+	y += (yVel >> 3);
+	for (int i = 0; i < level.numofplatforms; i++)
+	{
+		while (true)
+		{
+			if (!IsColliding(level.platform[i]))
+			{
+				break;
+			}
+			else
+			{
+				y -= (PlusOrMinus(yVel));
+			}
+			yVel = STATIONARY;
+		}
 	}
 }
 

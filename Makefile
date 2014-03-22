@@ -23,6 +23,7 @@ OBJECTS = \
 	gba.o \
 	font.o \
 	Object.o \
+	Level.o \
 	Entity.o \
 	Character.o \
 	sprite.o \

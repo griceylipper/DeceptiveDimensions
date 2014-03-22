@@ -4,6 +4,7 @@
 #define _ENTITY_H
 
 #include "Object.h"
+#include "Level.h"
 
 class Entity : public Object
 {	
@@ -34,6 +35,7 @@ class Entity : public Object
 		Entity(int, int, int, int, int, int, int, int, int);
 		void ApplyGravity();
 		void ApplyVelocity(Object);
+		void ApplyVelocity(Level);
 		void ReverseGravity();
 		int GetObjNum();
 		

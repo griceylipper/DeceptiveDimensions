@@ -15,7 +15,7 @@ http://www.coranac.com/tonc/text/fixed.htm
  follow it roughly, but do not treat this order as gospel!)
 
 Bug fixes:
-
+-Fix random teleportation through platforms if travelling leftwards or upwards
 
 Clean-up:
 -Work out how to make player check if it's colliding with all obstacles in the level instead of just one
@@ -28,10 +28,7 @@ New features:
 
 -Get player animation working
 -Redraw player sprite
-	-Give player outline so it is clearer against background. 
--Add platforms
-	-Ask for advice on whether to create separate classes for them or just use Object class
-	-Figure out how to go about drawing them - which tiles need to go where in relation to the rectangle
+	-Give player outline so it is clearer against background.
 -Add more background graphics.
 	-Maybe ask whether Kirsteen can provide graphics
 	-Implement scrolling backgrounds
@@ -44,32 +41,46 @@ New features:
 
 *** CHANGE LOG ***
 	
-2014/03/14
+2014/03/22
 
--Added preliminary background graphics
-	-Mostly platforms at an oblique angle - will probably need a couple more tiles for other cases.
--Decided against having a collision box for player that is smaller than character graphics
-	-This would only really be useful if there were enemies
--Jumping now has two conditions:
-	-If the player has a yVel which makes the player appear stationary
-	-If the player is touching an object
-		-This may cause problems when the player is touching the ceiling
--Added some basic collision detection for when the player collides with a single object
+-Added Level class
+	-Allows storage of platform positions
+		-Can also draw platforms
+	-Helps with collision detection - only one level to pass into Player class instead of variable number of objects
+	-Will accommodate entities when implemented
+-Entity::ApplyVelocity() updated with Level class
+	-Cycles through all platforms and checks if it is colliding with any of them
+	*Random teleportation through platforms if travelling leftwards or upwards
+		-May have been a problem all along, just unnoticed because of only one platform
+-Character::ReadButtons updated with Level class
+	-Now performs condition check if player is touching a platform
+	-Value is stored in new isonplatform bool
+	-This is passed to if statement to allow jumping
+-frameCounter now resets when it reaches a value (currently 60)
+-Preliminary spritesheet and reconsidered background graphics have been created
+	-They go unimplemented for the moment
+	-Really need to ask Adam about Kirsteen kindly donating graphics
+
 */
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include "gba.h"
 #include "font.h"
 #include "sprite.h"
+//#include "spritesheet2.h"
 #include "background.h"
 #include "Object.h"
 #include "Entity.h"
 #include "Character.h"
+#include "Level.h"
 
 //Function prototypes
+int Increment(int);
 void SetObject(Entity);
 void FillScreenblock(int, int);
+void DrawText(int, int, const char[]);
 
 // A blank tile.
 // See the palette below for what the colour numbers mean.
@@ -109,47 +120,20 @@ int main()
 	
 	//Custom spritesheet loading
 	LoadPaletteObjData(0, spritePal, sizeof spritePal);
+	//LoadPaletteObjData(0, spritesheet2Pal, sizeof spritesheet2Pal);
 	LoadPaletteBGData(0, backgroundPal, sizeof backgroundPal);
 	LoadTileData(4, 0, spriteTiles, sizeof spriteTiles);
+	//LoadTileData(5, 0, spritesheet2Tiles, sizeof spritesheet2Tiles);
 	LoadTileData(0, 0, backgroundTiles, sizeof backgroundTiles);
-
+	
 	//Background
 	FillScreenblock(30, 3);
-	
-	//Temporary floor drawing stuff
-	//Draw wall on LHS
-	for (int x = 0; x < 2; x++)
-	{
-		for (int y = 0; y < 32; y++)
-		{
-			SetTile(30, x, y, 0);
-		}
-	}
-	
-	//Draw floor
-	SetTile(30, 0, 19, 32);
-	for (int x = 1; x < 32; x += 2)
-	{
-		SetTile(30, x, 19, 33);
-		SetTile(30, x + 1, 19, 34);
-	}
-	SetTile(30, 0, 18, 1);
-	SetTile(30, 1, 17, 1);	
-	SetTile(30, 1, 18, 32);
-	for (int x = 2; x < 32; x += 2)
-	{
-		SetTile(30, x, 18, 33);
-		SetTile(30, x + 1, 18, 34);
-	}
-	for (int x = 2; x < 32; x++)
-	{
-		SetTile(30, x, 17, 2);
-	}
 	
 	ClearObjects();
 	
 	Character player(116, 76, 8, 16, 0, 0, 4, 1, 0, 8, 8);
 	Object platform(0, SCREEN_HEIGHT - 9, SCREEN_WIDTH, 8);
+	Level level1;
 
 	uint16_t prevButtons = 0;
 	
@@ -160,17 +144,19 @@ int main()
 	{
 		uint16_t curButtons = REG_KEYINPUT;
 		
-		player.ReadButtons(curButtons, prevButtons, platform);
+		player.ReadButtons(curButtons, prevButtons, level1);
 		player.ApplyGravity();
-		player.ApplyVelocity(platform);
+		player.ApplyVelocity(level1);
 		player.CheckOnScreen();
+		
+		level1.Draw();
 		
 		SetObject(player.GetObjNum(),
 		  ATTR0_SHAPE(2) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(player.Gety()),
 		  ATTR1_SIZE(0) | ATTR1_X(player.Getx()),
 		  ATTR2_ID8(0));
 
-		frameCounter++;
+		frameCounter = Increment(frameCounter);
 		
 		prevButtons = curButtons;
 		
@@ -199,4 +185,14 @@ void FillScreenblock(int screenblock, int tile)
 			SetTile(screenblock, x, y, tile);
 		}
 	}
+}
+
+int Increment(int counter)
+{
+	counter++;
+	if (counter % 60 == 0)
+	{
+		counter = 0;
+	}
+	return counter;
 }

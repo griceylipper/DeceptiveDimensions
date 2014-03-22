@@ -22,13 +22,14 @@ void Character::Reset(int a, int b, int w, int h, int xV, int yV, int g, int W, 
 	spawnx = sx;
 	spawny = sy;
 	
+	isonplatform = false;
 	terminalx = 30;
 	terminaly = 160;
 	accel = 2;
 	decel = 3;
 }
 
-void Character::ReadButtons(uint16_t curButtons, uint16_t prevButtons, Object obstacle)
+void Character::ReadButtons(uint16_t curButtons, uint16_t prevButtons, Level level)
 {
 	//Sideways motion. Gives character slight slideyness.
 	//Accelerating
@@ -58,7 +59,17 @@ void Character::ReadButtons(uint16_t curButtons, uint16_t prevButtons, Object ob
 	}
 	
 	//Jumping
-	if (((curButtons & KEY_A) == 0) && ((prevButtons & KEY_A) != 0) && (yVel >= 0) && (yVel < 8) && (IsTouching(obstacle)))
+	isonplatform = false;
+	for (int i = 0; i < level.numofplatforms; i++)
+	{
+		if (IsTouching(level.platform[i]))
+		{
+			isonplatform = true;
+			break;
+		}
+	}
+	
+	if (((curButtons & KEY_A) == 0) && ((prevButtons & KEY_A) != 0) && (yVel >= 0) && (yVel < 8) && isonplatform)
 	{
 		Jump();
 	}
