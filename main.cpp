@@ -15,10 +15,9 @@ http://www.coranac.com/tonc/text/fixed.htm
  follow it roughly, but do not treat this order as gospel!)
 
 Bug fixes:
--Fix random teleportation through platforms if travelling leftwards or upwards
 
 Clean-up:
--Work out how to make player check if it's colliding with all obstacles in the level instead of just one
+-Create function which outputs which side of an object another object is on for use in jumping
 -Figure out constructors for classes - which are really necessary?
 -Start making data and methods private in classes.
 -Finalise interaction between GBA objects and my own Objects
@@ -41,25 +40,12 @@ New features:
 
 *** CHANGE LOG ***
 	
-2014/03/22
+2014/03/23
 
--Added Level class
-	-Allows storage of platform positions
-		-Can also draw platforms
-	-Helps with collision detection - only one level to pass into Player class instead of variable number of objects
-	-Will accommodate entities when implemented
--Entity::ApplyVelocity() updated with Level class
-	-Cycles through all platforms and checks if it is colliding with any of them
-	*Random teleportation through platforms if travelling leftwards or upwards
-		-May have been a problem all along, just unnoticed because of only one platform
--Character::ReadButtons updated with Level class
-	-Now performs condition check if player is touching a platform
-	-Value is stored in new isonplatform bool
-	-This is passed to if statement to allow jumping
--frameCounter now resets when it reaches a value (currently 60)
--Preliminary spritesheet and reconsidered background graphics have been created
-	-They go unimplemented for the moment
-	-Really need to ask Adam about Kirsteen kindly donating graphics
+-Fixed bloody teleportation bug
+	-It was to do with stationary being set even if the player was not colliding in the first check.
+	-See comments for further details
+	-That was one hell of a bug
 
 */
 

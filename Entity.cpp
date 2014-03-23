@@ -4,6 +4,7 @@
 #include "Level.h"
 #include <cstdlib>
 
+
 // //Functions
 Entity::Entity()
 {
@@ -96,25 +97,50 @@ void Entity::ApplyVelocity(Level level)
 			else
 			{
 				x -= (PlusOrMinus(xVel));	//Move the entity back until it is no longer colliding
-			}
-			xVel = STATIONARY;
+				while (true)	//Read comment below for why I'm doing this
+				{
+					if (!IsColliding(level.platform[i]))
+					{
+						break;
+					}
+					else
+					{
+						x -= (PlusOrMinus(xVel));
+					}
+				}
+				xVel = STATIONARY;	//This way I only set xVel to stationary if player is colliding on first check, but not on the last check
+				break;
+			}	
 		}
 	}
 	
-	y += (yVel >> 3);
+	//Ditto for y
+	y += (yVel >> 3);	//Use of shift operation fixes problems with dividing when -4 < Vel < 4
 	for (int i = 0; i < level.numofplatforms; i++)
 	{
 		while (true)
 		{
-			if (!IsColliding(level.platform[i]))
+			if (!IsColliding(level.platform[i]))	//If not colliding with any obstacle, allow movement
 			{
 				break;
 			}
 			else
 			{
-				y -= (PlusOrMinus(yVel));
-			}
-			yVel = STATIONARY;
+				y -= (PlusOrMinus(yVel));	//Move the entity back until it is no longer colliding
+				while (true)	//Read comment below for why I'm doing this
+				{
+					if (!IsColliding(level.platform[i]))
+					{
+						break;
+					}
+					else
+					{
+						y -= (PlusOrMinus(yVel));
+					}
+				}
+				yVel = STATIONARY;	//This way I only set xVel to stationary if player is colliding on first check, but not on the last check
+				break;
+			}	
 		}
 	}
 }
