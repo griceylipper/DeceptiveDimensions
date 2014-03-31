@@ -1,3 +1,5 @@
+//main.cpp
+
 /*
 
 DECEPTIVE DIMENSIONS
@@ -17,6 +19,7 @@ http://www.coranac.com/tonc/text/fixed.htm
 Bug fixes:
 
 Clean-up:
+-Work out how to do collision detection for cubes without testing collision on themselves
 -Create function which outputs which side of an object another object is on for use in jumping
 -Figure out constructors for classes - which are really necessary?
 -Start making data and methods private in classes.
@@ -40,12 +43,22 @@ New features:
 
 *** CHANGE LOG ***
 	
-2014/03/23
-
--Fixed bloody teleportation bug
-	-It was to do with stationary being set even if the player was not colliding in the first check.
-	-See comments for further details
-	-That was one hell of a bug
+2014/03/31
+-Deleted redundant SpikeRow class from previous game
+-Fixed problems with circular inclusion
+	-Fixed by use of forward declaration in Character and Entity classes
+-Cleaned up Entity::ApplyVelocity code
+	-Made a new function called MoveBackIfColliding()
+	-Position and Velocity variables are passed to it by reference
+-Test cubes added to Level class
+	-They do very little at the moment, and are represented by the decapitated head of the player
+-The player now a member of the Level class
+	-Movement of all objects is now handled by Level::MoveObjects
+		-This contains old player movement code which used to be in the main
+		-The main is SO TINY now
+-New Music considerations.txt file
+	-List of music I would like to implement for the different dimensions if possible
+	-Not important at all right now
 
 */
 
@@ -109,7 +122,7 @@ int main()
 	//LoadPaletteObjData(0, spritesheet2Pal, sizeof spritesheet2Pal);
 	LoadPaletteBGData(0, backgroundPal, sizeof backgroundPal);
 	LoadTileData(4, 0, spriteTiles, sizeof spriteTiles);
-	//LoadTileData(5, 0, spritesheet2Tiles, sizeof spritesheet2Tiles);
+	//LoadTileData(4, 0, spritesheet2Tiles, sizeof spritesheet2Tiles);
 	LoadTileData(0, 0, backgroundTiles, sizeof backgroundTiles);
 	
 	//Background
@@ -117,8 +130,7 @@ int main()
 	
 	ClearObjects();
 	
-	Character player(116, 76, 8, 16, 0, 0, 4, 1, 0, 8, 8);
-	Object platform(0, SCREEN_HEIGHT - 9, SCREEN_WIDTH, 8);
+	//Character player(116, 76, 8, 16, 0, 0, 4, 1, 0, 16, 16);
 	Level level1;
 
 	uint16_t prevButtons = 0;
@@ -130,17 +142,8 @@ int main()
 	{
 		uint16_t curButtons = REG_KEYINPUT;
 		
-		player.ReadButtons(curButtons, prevButtons, level1);
-		player.ApplyGravity();
-		player.ApplyVelocity(level1);
-		player.CheckOnScreen();
-		
+		level1.MoveObjects(curButtons, prevButtons, level1);
 		level1.Draw();
-		
-		SetObject(player.GetObjNum(),
-		  ATTR0_SHAPE(2) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(player.Gety()),
-		  ATTR1_SIZE(0) | ATTR1_X(player.Getx()),
-		  ATTR2_ID8(0));
 
 		frameCounter = Increment(frameCounter);
 		

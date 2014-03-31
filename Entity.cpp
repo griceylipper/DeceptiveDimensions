@@ -1,9 +1,8 @@
 //Entity.cpp
 
-#include "Entity.h"
 #include "Level.h"
+#include "Entity.h"
 #include <cstdlib>
-
 
 // //Functions
 Entity::Entity()
@@ -12,8 +11,8 @@ Entity::Entity()
 	y = 0;
 	width = 8;
 	height = 8;
-	xVel = 0;
-	yVel = 0;
+	xVel = STATIONARY;
+	yVel = STATIONARY;
 	gravity = 10;
 	weight = 1;
 	objnum = 0;
@@ -50,98 +49,48 @@ void Entity::ApplyGravity()
 }
 
 //Applies the velocities of objects to their positions
-void Entity::ApplyVelocity(Object obstacle)
-{
-	ApplyTerminal();
-	x += (xVel >> 3);	//Use of shift operation fixes problems with dividing when -4 < Vel < 4
-	while (true)
-	{
-		if (!IsColliding(obstacle))	//If not colliding with any obstacle, allow movement
-		{
-			break;
-		}
-		else
-		{
-			x -= (PlusOrMinus(xVel));	//Move the entity back until it is no longer colliding
-		}
-		xVel = STATIONARY;
-	}
-
-	y += (yVel >> 3);
-	while (true)
-	{
-		if (!IsColliding(obstacle))
-		{
-			break;
-		}
-		else
-		{
-			y -= (PlusOrMinus(yVel));
-		}
-		yVel = STATIONARY;
-	}
-}
-
 void Entity::ApplyVelocity(Level level)
 {
 	ApplyTerminal();
+	
 	x += (xVel >> 3);	//Use of shift operation fixes problems with dividing when -4 < Vel < 4
 	for (int i = 0; i < level.numofplatforms; i++)
 	{
-		while (true)
-		{
-			if (!IsColliding(level.platform[i]))	//If not colliding with any obstacle, allow movement
-			{
-				break;
-			}
-			else
-			{
-				x -= (PlusOrMinus(xVel));	//Move the entity back until it is no longer colliding
-				while (true)	//Read comment below for why I'm doing this
-				{
-					if (!IsColliding(level.platform[i]))
-					{
-						break;
-					}
-					else
-					{
-						x -= (PlusOrMinus(xVel));
-					}
-				}
-				xVel = STATIONARY;	//This way I only set xVel to stationary if player is colliding on first check, but not on the last check
-				break;
-			}	
-		}
+		MoveBackIfColliding(x, xVel, level.platform[i]);
 	}
+	
+	// for (int i = 0; i < level.numofcubes; i++)
+	// {
+		// MoveBackIfColliding(level.cube[i]);
+	// }
 	
 	//Ditto for y
 	y += (yVel >> 3);	//Use of shift operation fixes problems with dividing when -4 < Vel < 4
+	
 	for (int i = 0; i < level.numofplatforms; i++)
 	{
-		while (true)
+		MoveBackIfColliding(y, yVel, level.platform[i]);
+	}
+	
+	// for (int i = 0; i < level.numofcubes; i++)
+	// {
+		// MoveBackIfColliding(y, yVel, level.cube[i]);
+	// }
+}
+
+void Entity::MoveBackIfColliding(int &position, int &axisVel, Object obstacle)
+{
+	if (IsColliding(obstacle))	//If not colliding with any obstacle, allow movement
+	{	
+		while (true)	//Read comment below for why I'm doing this
 		{
-			if (!IsColliding(level.platform[i]))	//If not colliding with any obstacle, allow movement
+			position -= (PlusOrMinus(axisVel));				//Move the entity back 
+			if (!IsColliding(obstacle))	//until it is no longer colliding
 			{
 				break;
 			}
-			else
-			{
-				y -= (PlusOrMinus(yVel));	//Move the entity back until it is no longer colliding
-				while (true)	//Read comment below for why I'm doing this
-				{
-					if (!IsColliding(level.platform[i]))
-					{
-						break;
-					}
-					else
-					{
-						y -= (PlusOrMinus(yVel));
-					}
-				}
-				yVel = STATIONARY;	//This way I only set xVel to stationary if player is colliding on first check, but not on the last check
-				break;
-			}	
 		}
+		axisVel = STATIONARY;	//This way I only set velocity to stationary if player has collided with an obstacle
 	}
 }
 

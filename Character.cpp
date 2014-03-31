@@ -1,7 +1,12 @@
 //Character.cpp
 
 #include "Character.h"
-#include "gba.h"
+#include "Level.h"
+
+Character::Character()
+{
+	Reset(116, 76, 8, 16, 0, 0, 4, 1, 0, 16, 16);
+}
 
 Character::Character(int a, int b, int w, int h, int xV, int yV, int g, int W, int o, int sx, int sy)
 {
