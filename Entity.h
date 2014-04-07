@@ -3,10 +3,10 @@
 #ifndef _ENTITY_H
 #define _ENTITY_H
 
-//Included dependancies
+//Included dependencies
 #include "Object.h"
 
-//Forward declared dependancies
+//Forward declared dependencies
 class Level;
 
 class Entity : public Object
@@ -15,6 +15,7 @@ class Entity : public Object
 		//Methods
 		void ApplyTerminal();
 		void MoveBackIfColliding(int &, int &, Object);
+		void StepAxis(int &, int &, Level);
 		int PlusOrMinus(int);
 	
 	protected:
@@ -27,11 +28,11 @@ class Entity : public Object
 		int terminalx;
 		int terminaly;
 		
-	public:
-		//Data
-		enum {STATIONARY = 4};		//Constant for xVel/yVel for stationary (offset due to bit shifting)
-									//Is there a better way to define constants in classes?
+		//Constants for when xVel/yVel is stationary (offset due to bit shifting)
+		//Is there a better way to define constants in classes?
+		enum {BITSHIFT = 8, STATIONARY = BITSHIFT / 2};
 		
+	public:		
 		//Methods
 		Entity();
 		Entity(int, int, int, int, int, int, int, int, int);

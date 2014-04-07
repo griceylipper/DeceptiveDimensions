@@ -32,10 +32,10 @@ void Object::Reset(int a, int b, int w, int h)
 	height = h;
 }
 
-//Returns true if Object a collides with Object
+//Returns true if Object a collides with calling object
 bool Object::IsColliding(Object a)
 {
-	//If any sides of a are outside b
+	//If any sides of a are outside calling object
 	if (a.GetBottom() <= Gety())
 	{
 		return false;
@@ -53,14 +53,14 @@ bool Object::IsColliding(Object a)
 		return false;
 	}
 	
-	//If none of the sides of a are outside b,
+	//If none of the sides of a are outside calling object,
 	return true;
 }
 
 //The same as IsColliding(), expect it also returns true if two objects edges are adjacent
 bool Object::IsTouching(Object a)
 {
-	//If any sides of a are outside b
+	//If any sides of a are outside calling object
 	if (a.GetBottom() < Gety())
 	{
 		return false;
@@ -78,8 +78,18 @@ bool Object::IsTouching(Object a)
 		return false;
 	}
 	
-	//If none of the sides of a are outside b,
+	//If none of the sides of a are outside calling object,
 	return true;
+}
+
+//Returns true if calling object is directly above object a
+bool Object::IsAbove(Object a)
+{
+	if ((a.GetRight() > Getx()) && (a.Getx() < GetRight()) && IsTouching(a))
+	{
+		return true;
+	}
+	return false;
 }
 
 //Moves object to coordinates (a, b)
@@ -95,6 +105,7 @@ int Object::Getx()
 	return x;
 }
 
+//Returns y-position of object
 int Object::Gety()
 {
 	return y;

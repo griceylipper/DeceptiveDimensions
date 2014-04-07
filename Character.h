@@ -3,11 +3,11 @@
 #ifndef _CHARACTER_H
 #define _CHARACTER_H
 
-//Included dependancies
+//Included dependencies
 #include "Entity.h"
 #include "gba.h"
 
-//Forward declared dependancies
+//Forward declared dependencies
 class Level;
 
 class Character : public Entity
@@ -15,7 +15,7 @@ class Character : public Entity
 	private:
 		int accel;
 		int decel;
-		bool isonplatform;
+		bool onplatform;
 	
 	public:
 		//Data

@@ -8,12 +8,14 @@ Character::Character()
 	Reset(116, 76, 8, 16, 0, 0, 4, 1, 0, 16, 16);
 }
 
-Character::Character(int a, int b, int w, int h, int xV, int yV, int g, int W, int o, int sx, int sy)
+Character::Character(int a, int b, int w, int h, int xV, int yV, int g, int W, int o, int sx,
+					 int sy)
 {
 	Reset(a, b, w, h, xV, yV, g, W, o, sx, sy);
 }
 
-void Character::Reset(int a, int b, int w, int h, int xV, int yV, int g, int W, int o, int sx, int sy)
+void Character::Reset(int a, int b, int w, int h, int xV, int yV, int g, int W, int o, int sx,
+					  int sy)
 {
 	x = a;
 	y = b;
@@ -27,7 +29,7 @@ void Character::Reset(int a, int b, int w, int h, int xV, int yV, int g, int W, 
 	spawnx = sx;
 	spawny = sy;
 	
-	isonplatform = false;
+	onplatform = false;
 	terminalx = 30;
 	terminaly = 160;
 	accel = 2;
@@ -64,17 +66,29 @@ void Character::ReadButtons(uint16_t curButtons, uint16_t prevButtons, Level lev
 	}
 	
 	//Jumping
-	isonplatform = false;
+	onplatform = false;
 	for (int i = 0; i < level.numofplatforms; i++)
 	{
-		if (IsTouching(level.platform[i]))
+		if (IsAbove(level.platform[i]))
 		{
-			isonplatform = true;
+			onplatform = true;
 			break;
 		}
 	}
+	if (!onplatform)
+	{
+		for (int i = 0; i < level.numofcubes; i++)
+		{
+			if (IsAbove(level.cube[i]))
+			{
+				onplatform = true;
+				break;
+			}
+		}
+	}
 	
-	if (((curButtons & KEY_A) == 0) && ((prevButtons & KEY_A) != 0) && (yVel >= 0) && (yVel < 8) && isonplatform)
+	if (((curButtons & KEY_A) == 0) && ((prevButtons & KEY_A) != 0) && (yVel >= 0) && (yVel < 8)
+		  && onplatform)
 	{
 		Jump();
 	}

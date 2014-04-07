@@ -8,9 +8,13 @@
 #include "Character.h"
 #include "gba.h"
 
-class Level : public Object		//x and y coordinates in object refer to 
-								//offset so that the level is displayed correctly
+class Level : public Object		//x and y coordinates in object refer to offset so that the level is
+								//displayed correctly
 {
+	private:
+		//Methods
+		void FillScreenblock(int, int);
+		
 	public:
 		//Data
 		Object platform[50];

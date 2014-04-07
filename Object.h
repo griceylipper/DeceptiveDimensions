@@ -15,18 +15,19 @@ class Object
 		//Methods	
 		void Reset();
 		bool IsTouching(Object);
-		void Move(int, int);
 		
 	public:
 		//Methods
 		Object();
 		Object(int, int, int, int);
+		void Move(int, int);
 		void Reset(int, int, int, int);
 		int Getx();
 		int Gety();
 		int GetRight();
 		int GetBottom();
 		bool IsColliding(Object);
+		bool IsAbove(Object);
 };
 
 #endif

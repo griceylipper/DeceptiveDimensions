@@ -20,16 +20,19 @@ Level::Level()
 	platform[3].Reset(SCREEN_WIDTH - 8, 0, 8, SCREEN_HEIGHT);
 	platform[4].Reset(112, 104, 16, 16);
 	
+	//Player
+	player.Reset(116, 76, 8, 16, 0, 0, 4, 1, 0, 16, 16);	
+	
 	//Test cubes
 	cube[0].Reset(16, 64, 8, 8, 0, 0, 4, 1, 1);
 	cube[1].Reset(80, 72, 8, 8, 0, 0, 4, 1, 2);
-	
-	//Player
-	player.Reset(116, 76, 8, 16, 0, 0, 4, 1, 0, 16, 16);
 }
 
+//Draws level
 void Level::Draw()
 {
+	FillScreenblock(30, 3);
+	
 	for (int i = 0; i < numofplatforms; i++)
 	{
 		for (int y = platform[i].Gety() / 8 ; y < platform[i].GetBottom() / 8; y ++)
@@ -55,16 +58,37 @@ void Level::Draw()
 	}
 }
 
+//Steps all entities in level
 void Level::MoveObjects(uint16_t curButtons, uint16_t prevButtons, Level level)
 {
 	player.ReadButtons(curButtons, prevButtons, level);
 	player.ApplyGravity();
 	player.ApplyVelocity(level);
-	player.CheckOnScreen();
+	
+	//Temporary box respawn stuff
+	if (((curButtons & KEY_L) == 0) && ((prevButtons & KEY_L) != 0))
+	{
+		cube[0].Reset(16, 16, 8, 8, 0, 0, 4, 1, 1);
+	}
+	if (((curButtons & KEY_R) == 0) && ((prevButtons & KEY_R) != 0))
+	{
+		cube[1].Reset(16, 16, 8, 8, 0, 0, 4, 1, 2);
+	}
 	
 	for (int i = 0; i < numofcubes; i++)
 	{
 		cube[i].ApplyGravity();
 		cube[i].ApplyVelocity(level);
+	}
+}
+
+void Level::FillScreenblock(int screenblock, int tile)
+{
+	for (int y = 0; y < 32; ++y)
+	{
+		for (int x = 0; x < 32; ++x)
+		{
+			SetTile(screenblock, x, y, tile);
+		}
 	}
 }

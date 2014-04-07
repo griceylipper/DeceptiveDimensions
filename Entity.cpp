@@ -53,59 +53,64 @@ void Entity::ApplyVelocity(Level level)
 {
 	ApplyTerminal();
 	
-	x += (xVel >> 3);	//Use of shift operation fixes problems with dividing when -4 < Vel < 4
-	for (int i = 0; i < level.numofplatforms; i++)
-	{
-		MoveBackIfColliding(x, xVel, level.platform[i]);
-	}
-	
-	// for (int i = 0; i < level.numofcubes; i++)
-	// {
-		// MoveBackIfColliding(level.cube[i]);
-	// }
-	
-	//Ditto for y
-	y += (yVel >> 3);	//Use of shift operation fixes problems with dividing when -4 < Vel < 4
-	
-	for (int i = 0; i < level.numofplatforms; i++)
-	{
-		MoveBackIfColliding(y, yVel, level.platform[i]);
-	}
-	
-	// for (int i = 0; i < level.numofcubes; i++)
-	// {
-		// MoveBackIfColliding(y, yVel, level.cube[i]);
-	// }
+	StepAxis(x, xVel, level);
+	StepAxis(y, yVel, level);
 }
 
+//Steps an object in direction axis
+void Entity::StepAxis(int &axis, int &axisVel, Level level)
+{
+	axis += (axisVel >> 3);	//Use of shift operation fixes problems with dividing when -4 < Vel < 4
+	
+	for (int i = 0; i < level.numofplatforms; i++)
+	{
+		MoveBackIfColliding(axis, axisVel, level.platform[i]);
+	}
+	
+	if (objnum != 0)	//Guard against doing collision detection between an object and itself
+	{
+		MoveBackIfColliding(axis, axisVel, level.player);
+	}
+	
+	for (int i = 0; i < level.numofcubes; i++)
+	{
+		if (i + 1 != objnum)	//Same object guard
+		{
+			MoveBackIfColliding(axis, axisVel, level.cube[i]);
+		}
+	}
+}
+
+//Moves the entity backwards if the entity is colliding with another object
 void Entity::MoveBackIfColliding(int &position, int &axisVel, Object obstacle)
 {
-	if (IsColliding(obstacle))	//If not colliding with any obstacle, allow movement
+	//If not colliding with any obstacle allow movement
+	if (IsColliding(obstacle) && (axisVel < 0 || axisVel >= BITSHIFT))	
 	{	
-		while (true)	//Read comment below for why I'm doing this
+		do
 		{
-			position -= (PlusOrMinus(axisVel));				//Move the entity back 
-			if (!IsColliding(obstacle))	//until it is no longer colliding
-			{
-				break;
-			}
+			position -= (PlusOrMinus(axisVel));		//Move the entity backwards by one pixel
 		}
-		axisVel = STATIONARY;	//This way I only set velocity to stationary if player has collided with an obstacle
+		while (IsColliding(obstacle));				//until it no longer collides
+		
+		//Only set velocity to stationary if entity has collided with an obstacle
+		axisVel = STATIONARY;
 	}
 }
 
-//Set velocities = terminal if they exceed them.
+//Set velocities to terminal if they exceed them.
 void Entity::ApplyTerminal()
 {
 	if (abs(xVel) > terminalx)
 	{
-		if (xVel > 0)
+		if (xVel > STATIONARY)
 		{
 			xVel = terminalx;
 		}
 		else
 		{
-			xVel = -terminalx + 16; //Bit shift negative bias means character goes to the left quicker without offset. 
+			//Bit shift negative bias means character goes to the left quicker without offset. 
+			xVel = -terminalx + (2 * BITSHIFT);
 		}
 	}
 	if (abs(yVel) > terminaly)
@@ -116,7 +121,7 @@ void Entity::ApplyTerminal()
 		}
 		else
 		{
-			yVel = -terminaly + 16;
+			yVel = -terminaly + (2 * BITSHIFT);
 		}
 	}
 }
