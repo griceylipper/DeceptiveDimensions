@@ -30,21 +30,22 @@ void Character::Reset(int a, int b, int w, int h, int xV, int yV, int g, int W, 
 	spawny = sy;
 	
 	onplatform = false;
+	isholding = false;
 	terminalx = 30;
 	terminaly = 160;
 	accel = 2;
 	decel = 3;
 }
 
-void Character::ReadButtons(uint16_t curButtons, uint16_t prevButtons, Level level)
+void Character::ReadButtons(Buttons buttons, Level level)
 {
 	//Sideways motion. Gives character slight slideyness.
 	//Accelerating
-	if ((curButtons & KEY_LEFT) == 0)
+	if (buttons.LeftIsHeld())
 	{
 		xVel -= accel;
 	}
-	else if ((curButtons & KEY_RIGHT) == 0)
+	else if (buttons.RightIsHeld())
 	{
 		xVel += accel;
 	}
@@ -87,20 +88,36 @@ void Character::ReadButtons(uint16_t curButtons, uint16_t prevButtons, Level lev
 		}
 	}
 	
-	if (((curButtons & KEY_A) == 0) && ((prevButtons & KEY_A) != 0) && (yVel >= 0) && (yVel < 8)
-		  && onplatform)
+	if ((buttons.AJustPressed()) && onplatform)
 	{
 		Jump();
 	}
 	
-	//Temporary spawning
-	if (((curButtons & KEY_B) == 0) && ((prevButtons & KEY_B) != 0))
+	//Picking up things
+	if (buttons.BJustPressed())
 	{
-		Spawn();
+		if (isholding == false)
+		{
+			for (int i = 0; i < level.numofcubes; i++)
+			{
+				if (IsTouching(level.cube[i]))
+				{
+					isholding = true;
+					cubeheld = i;
+					level.cube[i].isheld = true;
+					break;
+				}
+			}
+		}
+		else
+		{
+			level.cube[cubeheld].isheld = false;
+			isholding = false;
+		}		
 	}
 }
 
-//Makes Character jump in direction opposite to gravity.
+//Makes character jump in direction opposite to gravity.
 void Character::Jump()
 {
 	yVel = gravity * -10;

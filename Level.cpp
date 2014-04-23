@@ -1,7 +1,6 @@
 //Level.cpp
 
 #include "Level.h"
-#include "gba.h"
 
 //Constructor
 Level::Level()
@@ -11,7 +10,7 @@ Level::Level()
 	width = 256;
 	height = 256;
 	numofplatforms = 5;
-	numofcubes = 2;
+	numofcubes = 3;
 	
 	//Default boundaries
 	platform[0].Reset(0, 0, SCREEN_WIDTH, 8);
@@ -25,7 +24,16 @@ Level::Level()
 	
 	//Test cubes
 	cube[0].Reset(16, 64, 8, 8, 0, 0, 4, 1, 1);
-	cube[1].Reset(80, 72, 8, 8, 0, 0, 4, 1, 2);
+	cube[1].Reset(24, 72, 8, 8, 0, 0, 4, 1, 2);
+	cube[2].Reset(32, 80, 8, 8, 0, 0, 4, 1, 3);
+	
+	for (int i = 0; i < numofcubes; i++)
+	{
+		SetObject(cube[i].GetObjNum(),
+		  ATTR0_SHAPE(0) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(cube[i].Gety()),
+		  ATTR1_SIZE(0) | ATTR1_X(cube[i].Getx()),
+		  ATTR2_ID8(0));
+	}
 }
 
 //Draws level
@@ -43,7 +51,10 @@ void Level::Draw()
 			}
 		}
 	}
-	
+}
+
+void Level::UpdateObjects()
+{	
 	SetObject(player.GetObjNum(),
 	  ATTR0_SHAPE(2) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(player.Gety()),
 	  ATTR1_SIZE(0) | ATTR1_X(player.Getx()),
@@ -51,33 +62,30 @@ void Level::Draw()
 	
 	for (int i = 0; i < numofcubes; i++)
 	{
-		SetObject(cube[i].GetObjNum(),
-		  ATTR0_SHAPE(0) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(cube[i].Gety()),
-		  ATTR1_SIZE(0) | ATTR1_X(cube[i].Getx()),
-		  ATTR2_ID8(0));
+		SetObjectX(cube[i].GetObjNum(), cube[i].Getx());
+		SetObjectY(cube[i].GetObjNum(), cube[i].Gety());
 	}
 }
 
 //Steps all entities in level
-void Level::MoveObjects(uint16_t curButtons, uint16_t prevButtons, Level level)
+void Level::MoveObjects(Buttons buttons, Level level)
 {
-	player.ReadButtons(curButtons, prevButtons, level);
-	player.ApplyGravity();
+	player.ReadButtons(buttons, level);
 	player.ApplyVelocity(level);
+	player.CheckOnScreen();
 	
 	//Temporary box respawn stuff
-	if (((curButtons & KEY_L) == 0) && ((prevButtons & KEY_L) != 0))
+	if (buttons.LJustPressed())
 	{
-		cube[0].Reset(16, 16, 8, 8, 0, 0, 4, 1, 1);
+		cube[0].Reset(16, 8, 8, 8, 0, 0, 4, 1, 1);
 	}
-	if (((curButtons & KEY_R) == 0) && ((prevButtons & KEY_R) != 0))
+	if (buttons.RJustPressed())
 	{
 		cube[1].Reset(16, 16, 8, 8, 0, 0, 4, 1, 2);
 	}
 	
 	for (int i = 0; i < numofcubes; i++)
 	{
-		cube[i].ApplyGravity();
 		cube[i].ApplyVelocity(level);
 	}
 }

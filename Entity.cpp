@@ -15,9 +15,10 @@ Entity::Entity()
 	yVel = STATIONARY;
 	gravity = 10;
 	weight = 1;
-	objnum = 0;
+	objnum = 9;
 	terminalx = 30;
 	terminaly = 160;
+	isheld = false;
 }
 
 //Constructor which allows setting of all eight data values
@@ -40,6 +41,7 @@ void Entity::Reset(int a, int b , int w, int h, int xV, int yV, int g, int W, in
 	objnum = o;
 	terminalx = 24;
 	terminaly = 128;
+	isheld = false;
 }
 
 //Applies the acceleration of gravity to the objects current velocity
@@ -53,8 +55,16 @@ void Entity::ApplyVelocity(Level level)
 {
 	ApplyTerminal();
 	
-	StepAxis(x, xVel, level);
-	StepAxis(y, yVel, level);
+	if (!isheld)
+	{
+		ApplyGravity();
+		StepAxis(x, xVel, level);
+		StepAxis(y, yVel, level);
+	}
+	else
+	{
+		Move(level.player.x + 8, level.player.y + 2);
+	}
 }
 
 //Steps an object in direction axis
@@ -67,14 +77,14 @@ void Entity::StepAxis(int &axis, int &axisVel, Level level)
 		MoveBackIfColliding(axis, axisVel, level.platform[i]);
 	}
 	
-	if (objnum != 0)	//Guard against doing collision detection between an object and itself
+	if (objnum != 0)	//Guard against doing collision detection between player object and itself
 	{
 		MoveBackIfColliding(axis, axisVel, level.player);
 	}
 	
 	for (int i = 0; i < level.numofcubes; i++)
 	{
-		if (i + 1 != objnum)	//Same object guard
+		if (i + 1 != objnum)	//Same object guard for cubes
 		{
 			MoveBackIfColliding(axis, axisVel, level.cube[i]);
 		}

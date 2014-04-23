@@ -220,3 +220,5 @@ pip-log.txt
 
 *.o
 *.gba
+*.mk
+*.elf

@@ -9,6 +9,7 @@ DECEPTIVE DIMENSIONS
 *** REFERENCES ***
 http://www.gamedev.net/page/resources/_/technical/game-programming/the-guide-to-implementing-2d-platformers-r2936
 http://www.coranac.com/tonc/text/fixed.htm
+http://www.gameprogrammingpatterns.com/
 ******************
 	
 *** TO DO LIST: ***
@@ -17,8 +18,7 @@ http://www.coranac.com/tonc/text/fixed.htm
  follow it roughly, but do not treat this order as gospel!)
 
 Bug fixes:
--Strange graphical glitch at right side of top edge
-	-Seems to change with altering entity velocities
+
 
 Clean-up:
 -Figure out constructors for classes - which are really necessary?
@@ -44,15 +44,24 @@ New features:
 
 *** CHANGE LOG ***
 	
-2014/04/07
--Worked out how to do collision detection for cubes without testing collision on themselves
--Added StepAxis() function to Entity to further clean up ApplyVelocity() code
--Added another enum to Entity called BITSHIFT
-	-Basically a cop out to get rid of some of the magic numbers related to bitshifting
--Created function which outputs true when one object is directly above another for use in jumping
--Moved FillScreenblock() function to Level class
--Realised I had no FlipBuffers() in the main (woops!), so that's been added
--Formatted all files such that no line is no more than 100 characters long
+2014/04/23
+
+-Added new Buttons class to more tidily handle button presses
+	-Contains former prevButtons and curButtons uint16_ts
+	-Provides 10 functions for when any certain button is being held
+	-Also 10 more functions for when any button has just been pressed
+-Added temporary 3rd cube for testing purposes
+	-Had to increase the cubes array index in Level.h
+	-This has me stumped for such a long time!
+-Added broken code for player holding cubes
+	-May reimplement with better data structure in next commit
+-Added Level::UpdateObjects() to separate updating objects from drawing level
+	-Uses SetObjectX/Y instead of SetObject on cubes
+	-This fixes strange graphical glitch at right side of top edge
+		-Seems to change with altering entity velocities
+		-Only draw level once at beginning before main loop
+*On a blue moon, if you jump into a falling block from the side, you shoot up into the ceiling.
+
 */
 
 #include <stdint.h>
@@ -67,6 +76,7 @@ New features:
 #include "Entity.h"
 #include "Character.h"
 #include "Level.h"
+#include "Buttons.h"
 
 //Function prototypes
 int Increment(int);
@@ -93,11 +103,15 @@ int main()
 	//   (But we've not actually turned any of them on... yet.)
 	// DCNT_OBJ enables objects.
 	// DCNT_OBJ_1D make object tiles mapped in 1D (which makes life easier).
-	REG_DISPCNT = DCNT_MODE0 | DCNT_BG0 | DCNT_OBJ;
+	REG_DISPCNT = DCNT_MODE0 | DCNT_BG0 | DCNT_BG1 | DCNT_OBJ;
 	
 	REG_BG0CNT = BG_CBB(0) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
 	REG_BG0HOFS = 0;
 	REG_BG0VOFS = 0;
+	
+	REG_BG1CNT = BG_CBB(0) | BG_SBB(29) | BG_8BPP | BG_REG_32x32;
+	REG_BG1HOFS = 0;
+	REG_BG1VOFS = 0;
 
 	// (Charblocks 4 and 5 are for object tiles;
 	// 8bpp tiles 0-255 are in CB 4, tiles 256-511 in CB 5.)
@@ -110,26 +124,25 @@ int main()
 	//LoadTileData(4, 0, spritesheet2Tiles, sizeof spritesheet2Tiles);
 	LoadTileData(0, 0, backgroundTiles, sizeof backgroundTiles);
 
-	
 	ClearObjects();
 	
 	Level level1;
-
-	uint16_t prevButtons = 0;
+	level1.Draw();
 	
+	Buttons buttons;
+
 	int frameCounter = 0;
 	
 	//Main loop
 	while (true)
 	{
-		uint16_t curButtons = REG_KEYINPUT;
+		buttons.Update();
 		
-		level1.MoveObjects(curButtons, prevButtons, level1);
-		level1.Draw();
+		level1.MoveObjects(buttons, level1);
+		//level1.Draw();
+		level1.UpdateObjects();
 
 		frameCounter = Increment(frameCounter);
-		
-		prevButtons = curButtons;
 		
 		WaitVSync();
 		FlipBuffers();
@@ -140,14 +153,6 @@ int main()
 }
 
 //Functions
-void SetObject(Entity a)
-{
-	SetObject(a.GetObjNum(),
-	  ATTR0_SHAPE(2) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(a.Gety()),
-	  ATTR1_SIZE(0) | ATTR1_X(a.Getx()),
-	  ATTR2_ID8(0));
-}
-
 int Increment(int counter)
 {
 	counter++;

@@ -5,7 +5,7 @@
 
 //Included dependencies
 #include "Entity.h"
-#include "gba.h"
+#include "Buttons.h"
 
 //Forward declared dependencies
 class Level;
@@ -15,7 +15,9 @@ class Character : public Entity
 	private:
 		int accel;
 		int decel;
+		int cubeheld;
 		bool onplatform;
+		bool isholding;
 	
 	public:
 		//Data
@@ -26,7 +28,7 @@ class Character : public Entity
 		Character();
 		Character(int, int, int, int, int, int, int, int, int, int, int);
 		void Reset(int, int, int, int, int, int, int, int, int, int, int);
-		void ReadButtons(uint16_t, uint16_t, Level);
+		void ReadButtons(Buttons, Level);
 		void Jump();
 		void CheckOnScreen();
 		void Spawn();

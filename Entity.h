@@ -32,12 +32,14 @@ class Entity : public Object
 		//Is there a better way to define constants in classes?
 		enum {BITSHIFT = 8, STATIONARY = BITSHIFT / 2};
 		
-	public:		
+	public:	
+		//Data
+		bool isheld;
+		
 		//Methods
 		Entity();
 		Entity(int, int, int, int, int, int, int, int, int);
 		void ApplyGravity();
-		void ApplyVelocity(Object);
 		void ApplyVelocity(Level);
 		void ReverseGravity();
 		int GetObjNum();

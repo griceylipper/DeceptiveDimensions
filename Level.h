@@ -3,10 +3,11 @@
 #ifndef _LEVEL_H
 #define _LEVEL_H
 
+//Included dependencies
 #include "Object.h"
 #include "Entity.h"
 #include "Character.h"
-#include "gba.h"
+#include "Buttons.h"
 
 class Level : public Object		//x and y coordinates in object refer to offset so that the level is
 								//displayed correctly
@@ -18,7 +19,7 @@ class Level : public Object		//x and y coordinates in object refer to offset so 
 	public:
 		//Data
 		Object platform[50];
-		Entity cube[2];
+		Entity cube[20];
 		Character player;
 		int numofplatforms;
 		int numofcubes;
@@ -26,7 +27,8 @@ class Level : public Object		//x and y coordinates in object refer to offset so 
 		//Methods
 		Level();
 		void Draw();
-		void MoveObjects(uint16_t, uint16_t, Level);
+		void MoveObjects(Buttons, Level);
+		void UpdateObjects();
 };
 
 #endif
