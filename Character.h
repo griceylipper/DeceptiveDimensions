@@ -15,20 +15,20 @@ class Character : public Entity
 	private:
 		int accel;
 		int decel;
-		int cubeheld;
 		bool onplatform;
-		bool isholding;
 	
 	public:
 		//Data
 		int spawnx;
 		int spawny;
+		int cubeheld;
+		bool isholding;
 		
 		//Functions
 		Character();
 		Character(int, int, int, int, int, int, int, int, int, int, int);
 		void Reset(int, int, int, int, int, int, int, int, int, int, int);
-		void ReadButtons(Buttons, Level);
+		void ReadButtons(Buttons &, Level &);
 		void Jump();
 		void CheckOnScreen();
 		void Spawn();

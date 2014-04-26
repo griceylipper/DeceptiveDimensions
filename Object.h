@@ -24,6 +24,8 @@ class Object
 		void Reset(int, int, int, int);
 		int Getx();
 		int Gety();
+		int GetWidth();
+		int GetHeight();
 		int GetRight();
 		int GetBottom();
 		bool IsColliding(Object);

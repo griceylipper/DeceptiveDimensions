@@ -44,23 +44,19 @@ New features:
 
 *** CHANGE LOG ***
 	
-2014/04/23
-
--Added new Buttons class to more tidily handle button presses
-	-Contains former prevButtons and curButtons uint16_ts
-	-Provides 10 functions for when any certain button is being held
-	-Also 10 more functions for when any button has just been pressed
--Added temporary 3rd cube for testing purposes
-	-Had to increase the cubes array index in Level.h
-	-This has me stumped for such a long time!
--Added broken code for player holding cubes
-	-May reimplement with better data structure in next commit
--Added Level::UpdateObjects() to separate updating objects from drawing level
-	-Uses SetObjectX/Y instead of SetObject on cubes
-	-This fixes strange graphical glitch at right side of top edge
-		-Seems to change with altering entity velocities
-		-Only draw level once at beginning before main loop
-*On a blue moon, if you jump into a falling block from the side, you shoot up into the ceiling.
+2014/04/25
+-Implemented boxes which can now be picked up! Finally!
+	-Old code was nearly right, but I needed to go back and make sure every derivative function was
+	called by reference instead of value
+	-When a box is picked up, player's height must be increased to account for the cube on the head
+	-The player must also be moved down and up as it picks up and drops cubes, since the player is
+	referenced from its top left hand corner.
+-Cleaned up the way levels had to pass themselves as arguments
+	-Now uses *this to refer to itself in it's methods
+-Added enum to Level for the maximum number of cubes and platforms in a level
+	-Used to dereference player from a cube it has just dropped
+-Added GetWidth() and GetHeight() methods to the object class
+-Made some of the Entity methods use a const reference to the levels being passed to it
 
 */
 
@@ -138,7 +134,7 @@ int main()
 	{
 		buttons.Update();
 		
-		level1.MoveObjects(buttons, level1);
+		level1.MoveObjects(buttons);
 		//level1.Draw();
 		level1.UpdateObjects();
 

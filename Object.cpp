@@ -111,6 +111,18 @@ int Object::Gety()
 	return y;
 }
 
+//Returns width of object
+int Object::GetWidth()
+{
+	return width;
+}
+
+//Returns height of object
+int Object::GetHeight()
+{
+	return height;
+}
+
 //Returns x-position of right hand edge of the Object
 int Object::GetRight()
 {

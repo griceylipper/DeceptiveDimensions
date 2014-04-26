@@ -37,7 +37,7 @@ void Character::Reset(int a, int b, int w, int h, int xV, int yV, int g, int W, 
 	decel = 3;
 }
 
-void Character::ReadButtons(Buttons buttons, Level level)
+void Character::ReadButtons(Buttons &buttons, Level &level)
 {
 	//Sideways motion. Gives character slight slideyness.
 	//Accelerating
@@ -88,7 +88,7 @@ void Character::ReadButtons(Buttons buttons, Level level)
 		}
 	}
 	
-	if ((buttons.AJustPressed()) && onplatform)
+	if (buttons.AJustPressed() && onplatform)
 	{
 		Jump();
 	}
@@ -105,15 +105,22 @@ void Character::ReadButtons(Buttons buttons, Level level)
 					isholding = true;
 					cubeheld = i;
 					level.cube[i].isheld = true;
+					//Make player taller when carrying cube
+					height += level.cube[i].GetHeight();
+					//Move player up so that added height doesn't reach into the floor
+					y -= level.cube[i].GetHeight();
 					break;
 				}
 			}
 		}
 		else
 		{
-			level.cube[cubeheld].isheld = false;
 			isholding = false;
-		}		
+			level.cube[cubeheld].isheld = false;
+			height -= level.cube[cubeheld].GetHeight();
+			y += level.cube[cubeheld].GetHeight();
+			cubeheld = level.MAXCUBES + 1;		//End collision avoidance on cube picked up
+		}
 	}
 }
 

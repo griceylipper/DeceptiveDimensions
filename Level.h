@@ -18,8 +18,9 @@ class Level : public Object		//x and y coordinates in object refer to offset so 
 		
 	public:
 		//Data
-		Object platform[50];
-		Entity cube[20];
+		enum {MAXCUBES = 20, MAXPLATFORMS = 50};
+		Object platform[MAXPLATFORMS];
+		Entity cube[MAXCUBES];
 		Character player;
 		int numofplatforms;
 		int numofcubes;
@@ -27,7 +28,7 @@ class Level : public Object		//x and y coordinates in object refer to offset so 
 		//Methods
 		Level();
 		void Draw();
-		void MoveObjects(Buttons, Level);
+		void MoveObjects(Buttons &);
 		void UpdateObjects();
 };
 

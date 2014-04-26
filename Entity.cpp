@@ -51,24 +51,25 @@ void Entity::ApplyGravity()
 }
 
 //Applies the velocities of objects to their positions
-void Entity::ApplyVelocity(Level level)
+void Entity::ApplyVelocity(Level &level)
 {
-	ApplyTerminal();
-	
-	if (!isheld)
+	if (isheld)
 	{
+		Move(level.player.Getx(), level.player.Gety());
+		xVel = STATIONARY;
+		yVel = STATIONARY;
+	}
+	else
+	{
+		ApplyTerminal();
 		ApplyGravity();
 		StepAxis(x, xVel, level);
 		StepAxis(y, yVel, level);
 	}
-	else
-	{
-		Move(level.player.x + 8, level.player.y + 2);
-	}
 }
 
 //Steps an object in direction axis
-void Entity::StepAxis(int &axis, int &axisVel, Level level)
+void Entity::StepAxis(int &axis, int &axisVel, const Level &level)
 {
 	axis += (axisVel >> 3);	//Use of shift operation fixes problems with dividing when -4 < Vel < 4
 	
@@ -84,7 +85,7 @@ void Entity::StepAxis(int &axis, int &axisVel, Level level)
 	
 	for (int i = 0; i < level.numofcubes; i++)
 	{
-		if (i + 1 != objnum)	//Same object guard for cubes
+		if ((objnum != i + 1) && i != level.player.cubeheld)	//Same object guard for cubes
 		{
 			MoveBackIfColliding(axis, axisVel, level.cube[i]);
 		}
@@ -92,10 +93,10 @@ void Entity::StepAxis(int &axis, int &axisVel, Level level)
 }
 
 //Moves the entity backwards if the entity is colliding with another object
-void Entity::MoveBackIfColliding(int &position, int &axisVel, Object obstacle)
+void Entity::MoveBackIfColliding(int &position, int &axisVel, const Object &obstacle)
 {
 	//If not colliding with any obstacle allow movement
-	if (IsColliding(obstacle) && (axisVel < 0 || axisVel >= BITSHIFT))	
+	if (IsColliding(obstacle) && (axisVel < 0 || axisVel >= BITSHIFT))
 	{	
 		do
 		{

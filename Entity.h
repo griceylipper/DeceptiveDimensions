@@ -14,8 +14,8 @@ class Entity : public Object
 	private:
 		//Methods
 		void ApplyTerminal();
-		void MoveBackIfColliding(int &, int &, Object);
-		void StepAxis(int &, int &, Level);
+		void MoveBackIfColliding(int &, int &, const Object &);
+		void StepAxis(int &, int &, const Level &);
 		int PlusOrMinus(int);
 	
 	protected:
@@ -40,7 +40,7 @@ class Entity : public Object
 		Entity();
 		Entity(int, int, int, int, int, int, int, int, int);
 		void ApplyGravity();
-		void ApplyVelocity(Level);
+		void ApplyVelocity(Level &);
 		void ReverseGravity();
 		int GetObjNum();
 		void Reset(int, int, int, int, int, int, int, int, int);
