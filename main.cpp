@@ -44,19 +44,24 @@ New features:
 
 *** CHANGE LOG ***
 	
-2014/04/25
--Implemented boxes which can now be picked up! Finally!
-	-Old code was nearly right, but I needed to go back and make sure every derivative function was
-	called by reference instead of value
-	-When a box is picked up, player's height must be increased to account for the cube on the head
-	-The player must also be moved down and up as it picks up and drops cubes, since the player is
-	referenced from its top left hand corner.
--Cleaned up the way levels had to pass themselves as arguments
-	-Now uses *this to refer to itself in it's methods
--Added enum to Level for the maximum number of cubes and platforms in a level
-	-Used to dereference player from a cube it has just dropped
--Added GetWidth() and GetHeight() methods to the object class
--Made some of the Entity methods use a const reference to the levels being passed to it
+2014/04/30
+-Added character sprite flipping
+	-Used a conditional bitmask variable to control it.
+-Added in throwing functionality
+	-Can now throw cubes a short distance in direction currently facing by pressing R
+	-Had to move decel to Entity from Character
+		-Allows cubes to decelerate after being thrown
+	-Had to move the disassociation of cubes line outside the Drop() function
+		-Allows same usage in Throw()
+-Added Pause feature
+	-Press start at any time to pause
+-Made Buttons a struct rather than a class, since all members were public anyway
+-Cleaned up a lot of the problems with bitshifting offsets
+	-Only one offset is applied when the axis is stepped
+	-Just to be sure, all the replaced code has been commented out rather than deleted
+		-There may be some stupid bug I have overlooked!
+-Added IsCollidingLevel() to Entity as general check to see if an entity is colliding with anything
+-General restructuring of classes
 
 */
 
@@ -76,7 +81,6 @@ New features:
 
 //Function prototypes
 int Increment(int);
-void SetObject(Entity);
 void DrawText(int, int, const char[]);
 
 // A blank tile.

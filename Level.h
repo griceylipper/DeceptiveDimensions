@@ -14,6 +14,7 @@ class Level : public Object		//x and y coordinates in object refer to offset so 
 {
 	private:
 		//Methods
+		bool paused;
 		void FillScreenblock(int, int);
 		
 	public:

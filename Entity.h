@@ -7,6 +7,7 @@
 #include "Object.h"
 
 //Forward declared dependencies
+class Character;
 class Level;
 
 class Entity : public Object
@@ -17,6 +18,7 @@ class Entity : public Object
 		void MoveBackIfColliding(int &, int &, const Object &);
 		void StepAxis(int &, int &, const Level &);
 		int PlusOrMinus(int);
+		void ApplyGravity();
 	
 	protected:
 		//Data
@@ -27,11 +29,15 @@ class Entity : public Object
 		int weight;
 		int terminalx;
 		int terminaly;
+		int decel;
 		
 		//Constants for when xVel/yVel is stationary (offset due to bit shifting)
 		//Is there a better way to define constants in classes?
-		enum {BITSHIFT = 8, STATIONARY = BITSHIFT / 2};
-		
+		//enum {BITSHIFT = 8, STATIONARY = BITSHIFT / 2};
+	
+		//Methods
+		void ApplyResistance();
+
 	public:	
 		//Data
 		bool isheld;
@@ -39,11 +45,12 @@ class Entity : public Object
 		//Methods
 		Entity();
 		Entity(int, int, int, int, int, int, int, int, int);
-		void ApplyGravity();
 		void ApplyVelocity(Level &);
 		void ReverseGravity();
 		int GetObjNum();
 		void Reset(int, int, int, int, int, int, int, int, int);
+		bool IsCollidingLevel(const Level &);
+		void GetThrown(const Character &);
 };
 
 #endif

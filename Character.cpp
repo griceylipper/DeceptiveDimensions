@@ -33,40 +33,153 @@ void Character::Reset(int a, int b, int w, int h, int xV, int yV, int g, int W, 
 	isholding = false;
 	terminalx = 30;
 	terminaly = 160;
-	accel = 2;
 	decel = 3;
+	accel = 2;
+	direction = RIGHT;
 }
 
 void Character::ReadButtons(Buttons &buttons, Level &level)
 {
 	//Sideways motion. Gives character slight slideyness.
+	Movement(buttons);
+	
+	//Jumping
+	if (buttons.AJustPressed())
+	{
+		Jump(level);
+	}
+	
+	//Picking up / dropping things
+	if (buttons.BJustPressed())
+	{
+		ManipulateCube(level);
+	}
+	
+	//Throwing things
+	if (buttons.RJustPressed())
+	{
+		ThrowCube(level);
+	}
+}
+
+//Takes input from buttons to pick up or throw a cube in level
+void Character::ManipulateCube(Level &level)
+{
+	if (isholding == false)
+	{
+		PickUp(level);
+	}
+	else
+	{
+		Drop(level);
+		//If cube successfully dropped
+		if (!isholding)
+		{
+			//End player's collision avoidance on cube just picked up
+			cubeheld = level.MAXCUBES + 1;
+		}
+	}
+}
+
+//Picks up a cube adjacent to the character
+void Character::PickUp(Level &level)
+{
+	for (int i = 0; i < level.numofcubes; i++)
+	{
+		if (IsTouching(level.cube[i]))
+		{
+			isholding = true;
+			cubeheld = i;
+			level.cube[i].isheld = true;
+			//Make player taller when carrying cube
+			height += level.cube[i].GetHeight();
+			//Move player up so that added height doesn't reach into the floor
+			y -= level.cube[i].GetHeight();
+			break;
+		}
+	}
+}
+
+//Drops cube being held by character
+void Character::Drop(Level &level)
+{
+	//Move cube to drop position
+	if (direction == LEFT)
+	{
+		level.cube[cubeheld].Move(x - width, level.cube[cubeheld].Gety());
+	}
+	else
+	{
+		level.cube[cubeheld].Move(x + width, level.cube[cubeheld].Gety());
+	}
+	
+	//If cube is not colliding with anything in level
+	if (level.cube[cubeheld].IsCollidingLevel(level) == false)
+	{
+		//Let go of cube
+		isholding = false;
+		level.cube[cubeheld].isheld = false;
+		height -= level.cube[cubeheld].GetHeight();
+		y += level.cube[cubeheld].GetHeight();
+		//Stops player immediately running underneath a cube just placed
+		//xVel = STATIONARY;
+		xVel = 0;
+	}
+	//Move back if colliding
+	else
+	{
+		if (direction == LEFT)
+		{
+			level.cube[cubeheld].Move(x + width, level.cube[cubeheld].Gety());
+		}
+		else
+		{
+			level.cube[cubeheld].Move(x - width, level.cube[cubeheld].Gety());
+		}
+	}
+}
+
+//Throws cube held by character in direction currently facing
+void Character::ThrowCube(Level &level)
+{
+	if (isholding)
+	{
+		Drop(level);
+		
+		//If cube successfully thrown
+		if (!isholding)
+		{
+			level.cube[cubeheld].GetThrown(level.player);
+			//End player's collision avoidance on cube that was picked up
+			cubeheld = level.MAXCUBES + 1;
+		}
+	}
+}
+
+//Takes input from buttons to move character
+void Character::Movement(Buttons &buttons)
+{
 	//Accelerating
 	if (buttons.LeftIsHeld())
 	{
 		xVel -= accel;
+		direction = LEFT;
 	}
 	else if (buttons.RightIsHeld())
 	{
 		xVel += accel;
+		direction = RIGHT;
 	}
 	//Decelerating
 	else
 	{
-		if (xVel > STATIONARY)
-		{
-			xVel -= decel;
-		}
-		else if (xVel < STATIONARY)
-		{
-			xVel += decel;
-		}
-		else
-		{
-			xVel = STATIONARY;
-		}
+		ApplyResistance();
 	}
-	
-	//Jumping
+}
+
+//Makes character jump in direction opposite to gravity.
+void Character::Jump(Level &level)
+{
 	onplatform = false;
 	for (int i = 0; i < level.numofplatforms; i++)
 	{
@@ -80,6 +193,12 @@ void Character::ReadButtons(Buttons &buttons, Level &level)
 	{
 		for (int i = 0; i < level.numofcubes; i++)
 		{
+			//Avoid checking if it is above a cube it is holding
+			//(Without guard player is "above" cube because of height changes made to character)
+			if (i == cubeheld)
+			{
+				continue;
+			}
 			if (IsAbove(level.cube[i]))
 			{
 				onplatform = true;
@@ -88,46 +207,10 @@ void Character::ReadButtons(Buttons &buttons, Level &level)
 		}
 	}
 	
-	if (buttons.AJustPressed() && onplatform)
+	if (onplatform)
 	{
-		Jump();
+		yVel = gravity * -11;
 	}
-	
-	//Picking up things
-	if (buttons.BJustPressed())
-	{
-		if (isholding == false)
-		{
-			for (int i = 0; i < level.numofcubes; i++)
-			{
-				if (IsTouching(level.cube[i]))
-				{
-					isholding = true;
-					cubeheld = i;
-					level.cube[i].isheld = true;
-					//Make player taller when carrying cube
-					height += level.cube[i].GetHeight();
-					//Move player up so that added height doesn't reach into the floor
-					y -= level.cube[i].GetHeight();
-					break;
-				}
-			}
-		}
-		else
-		{
-			isholding = false;
-			level.cube[cubeheld].isheld = false;
-			height -= level.cube[cubeheld].GetHeight();
-			y += level.cube[cubeheld].GetHeight();
-			cubeheld = level.MAXCUBES + 1;		//End collision avoidance on cube picked up
-		}
-	}
-}
-
-//Makes character jump in direction opposite to gravity.
-void Character::Jump()
-{
-	yVel = gravity * -10;
 }
 
 //Make sure that character stays on screen.

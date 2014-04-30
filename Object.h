@@ -15,7 +15,9 @@ class Object
 		//Methods	
 		void Reset();
 		bool IsTouching(Object);
-		
+		bool IsColliding(Object);
+		bool IsAbove(Object);
+				
 	public:
 		//Methods
 		Object();
@@ -28,8 +30,6 @@ class Object
 		int GetHeight();
 		int GetRight();
 		int GetBottom();
-		bool IsColliding(Object);
-		bool IsAbove(Object);
 };
 
 #endif

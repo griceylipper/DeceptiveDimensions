@@ -11,6 +11,7 @@ Level::Level()
 	height = 256;
 	numofplatforms = 5;
 	numofcubes = 3;
+	paused = false;
 	
 	//Default boundaries
 	platform[0].Reset(0, 0, SCREEN_WIDTH, 8);
@@ -54,21 +55,27 @@ void Level::Draw()
 }
 
 void Level::UpdateObjects()
-{	
+{
+	uint16_t facing = 0;
+	if (player.direction == player.LEFT)
+	{
+		facing = ATTR1_HFLIP;
+	}
+	
 	if (player.isholding)
 	{
 		//Allows for height change when carrying cubes on the head
 		SetObject(player.GetObjNum(),
 		  ATTR0_SHAPE(2) | ATTR0_8BPP | ATTR0_REG
 		    | ATTR0_Y(player.Gety() + cube[player.cubeheld].GetHeight()),	
-		  ATTR1_SIZE(0) | ATTR1_X(player.Getx()),
+		  ATTR1_SIZE(0) | ATTR1_X(player.Getx()) | facing,
 		  ATTR2_ID8(0));
 	}
 	else
 	{
 		SetObject(player.GetObjNum(),
 		  ATTR0_SHAPE(2) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(player.Gety()),
-		  ATTR1_SIZE(0) | ATTR1_X(player.Getx()),
+		  ATTR1_SIZE(0) | ATTR1_X(player.Getx()) | facing,
 		  ATTR2_ID8(0));	
 	}
 	for (int i = 0; i < numofcubes; i++)
@@ -81,23 +88,21 @@ void Level::UpdateObjects()
 //Steps all entities in level
 void Level::MoveObjects(Buttons &buttons)
 {
-	player.ReadButtons(buttons, *this);
-	player.ApplyVelocity(*this);
-	player.CheckOnScreen();
-	
-	//Temporary box respawn stuff
-	if (buttons.LJustPressed())
+	if (buttons.StartJustPressed())
 	{
-		cube[0].Reset(16, 8, 8, 8, 0, 0, 4, 1, 1);
-	}
-	if (buttons.RJustPressed())
-	{
-		cube[1].Reset(16, 16, 8, 8, 0, 0, 4, 1, 2);
+		paused = !paused;
 	}
 	
-	for (int i = 0; i < numofcubes; i++)
+	if (!paused)
 	{
-		cube[i].ApplyVelocity(*this);
+		player.ReadButtons(buttons, *this);
+		player.ApplyVelocity(*this);
+		player.CheckOnScreen();
+		
+		for (int i = 0; i < numofcubes; i++)
+		{
+			cube[i].ApplyVelocity(*this);
+		}
 	}
 }
 

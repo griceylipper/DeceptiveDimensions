@@ -13,23 +13,32 @@ class Level;
 class Character : public Entity
 {
 	private:
+		//Data
 		int accel;
-		int decel;
 		bool onplatform;
-	
+
+		//Methods
+		void Movement(Buttons &);
+		void ManipulateCube(Level &);
+		void PickUp(Level &);
+		void Drop(Level &);
+		void ThrowCube(Level &);
+		
 	public:
 		//Data
 		int spawnx;
 		int spawny;
 		int cubeheld;
 		bool isholding;
+		enum {LEFT = true, RIGHT = false};
+		bool direction;
 		
-		//Functions
+		//Methods
 		Character();
 		Character(int, int, int, int, int, int, int, int, int, int, int);
 		void Reset(int, int, int, int, int, int, int, int, int, int, int);
 		void ReadButtons(Buttons &, Level &);
-		void Jump();
+		void Jump(Level &);
 		void CheckOnScreen();
 		void Spawn();
 };
