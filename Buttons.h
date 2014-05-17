@@ -6,11 +6,15 @@
 //Included dependencies
 #include "gba.h"
 
+/**
+Encapsulates the state of current and previous buttons, and provides functions for updating the 
+state variables, and for checking whether any button is being held or was just pressed.
+*/
 struct Buttons
 {
 	//Data
-	uint16_t current;
-	uint16_t previous;
+	uint16_t current;		//State of buttons in current frame
+	uint16_t previous;		//State of buttons in previous frame
 	
 	//Methods
 	Buttons();

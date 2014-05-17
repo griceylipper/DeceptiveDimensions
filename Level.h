@@ -13,9 +13,17 @@ class Level : public Object		//x and y coordinates in object refer to offset so 
 								//displayed correctly
 {
 	private:
-		//Methods
+		//Data
+		int BackgroundOffsetx;
+		int BackgroundOffsety;
 		bool paused;
-		void FillScreenblock(int, int);
+		bool indimensionsmenu;
+		
+		//Methods
+		void DimensionMenuControl(Buttons &);
+		void FillScreenblock(int, int, int);
+		int CubeScreenxPosition(Entity &, int);
+		int CubeScreenyPosition(Entity &, int);
 		
 	public:
 		//Data
@@ -25,10 +33,14 @@ class Level : public Object		//x and y coordinates in object refer to offset so 
 		Character player;
 		int numofplatforms;
 		int numofcubes;
+		enum dimension {NORMAL, FLUFFY, HEAVY, SLOWMOTION, ANTIGRAVITY};
+		dimension curdimension;
+		dimension prevdimension;
 		
 		//Methods
 		Level();
 		void Draw();
+		void DrawBackground(dimension);
 		void MoveObjects(Buttons &);
 		void UpdateObjects();
 };

@@ -1,6 +1,6 @@
 //main.cpp
 
-/*
+/**
 
 DECEPTIVE DIMENSIONS
 	A Quantum Conundrum Demake
@@ -36,7 +36,6 @@ New features:
 	-Maybe ask whether Kirsteen can provide graphics
 -Implement scrolling backgrounds
 	-Make player stay in middle of screen when moving around level.
--Implement Entities which can be picked up.
 -Implement physics for moving platforms.
 -Implement dimensions
 
@@ -44,24 +43,8 @@ New features:
 
 *** CHANGE LOG ***
 	
-2014/04/30
--Added character sprite flipping
-	-Used a conditional bitmask variable to control it.
--Added in throwing functionality
-	-Can now throw cubes a short distance in direction currently facing by pressing R
-	-Had to move decel to Entity from Character
-		-Allows cubes to decelerate after being thrown
-	-Had to move the disassociation of cubes line outside the Drop() function
-		-Allows same usage in Throw()
--Added Pause feature
-	-Press start at any time to pause
--Made Buttons a struct rather than a class, since all members were public anyway
--Cleaned up a lot of the problems with bitshifting offsets
-	-Only one offset is applied when the axis is stepped
-	-Just to be sure, all the replaced code has been commented out rather than deleted
-		-There may be some stupid bug I have overlooked!
--Added IsCollidingLevel() to Entity as general check to see if an entity is colliding with anything
--General restructuring of classes
+2014/05/16
+-Introduced Doxygen style comments to classes and methods.
 
 */
 
@@ -72,7 +55,7 @@ New features:
 #include "font.h"
 #include "sprite.h"
 //#include "spritesheet2.h"
-#include "background.h"
+#include "backgroundnew.h"
 #include "Object.h"
 #include "Entity.h"
 #include "Character.h"
@@ -85,33 +68,35 @@ void DrawText(int, int, const char[]);
 
 // A blank tile.
 // See the palette below for what the colour numbers mean.
-const uint8_t blank_tile[64] = {
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-};
+// const uint8_t blank_tile[64] = {
+	// 0, 0, 0, 0, 0, 0, 0, 0,
+	// 0, 0, 0, 0, 0, 0, 0, 0,
+	// 0, 0, 0, 0, 0, 0, 0, 0,
+	// 0, 0, 0, 0, 0, 0, 0, 0,
+	// 0, 0, 0, 0, 0, 0, 0, 0,
+	// 0, 0, 0, 0, 0, 0, 0, 0,
+	// 0, 0, 0, 0, 0, 0, 0, 0,
+	// 0, 0, 0, 0, 0, 0, 0, 0,
+// };
 
 int main()
 {
 	// Set display options.
 	// DCNT_MODE0 sets mode 0, which provides four tiled backgrounds.
-	//   (But we've not actually turned any of them on... yet.)
 	// DCNT_OBJ enables objects.
 	// DCNT_OBJ_1D make object tiles mapped in 1D (which makes life easier).
-	REG_DISPCNT = DCNT_MODE0 | DCNT_BG0 | DCNT_BG1 | DCNT_OBJ;
+	REG_DISPCNT = DCNT_MODE0 | DCNT_BG0 | DCNT_BG1 | DCNT_BG2 | DCNT_OBJ;
 	
-	REG_BG0CNT = BG_CBB(0) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
-	REG_BG0HOFS = 0;
-	REG_BG0VOFS = 0;
+	REG_BG0CNT = BG_CBB(0) | BG_SBB(30) | BG_8BPP | BG_REG_32x32 | BG_PRIO(0);
+	REG_BG1CNT = BG_CBB(0) | BG_SBB(29) | BG_8BPP | BG_REG_32x32 | BG_PRIO(1);
 	
-	REG_BG1CNT = BG_CBB(0) | BG_SBB(29) | BG_8BPP | BG_REG_32x32;
-	REG_BG1HOFS = 0;
-	REG_BG1VOFS = 0;
+	REG_BG2CNT = BG_CBB(0) | BG_SBB(25) | BG_8BPP | BG_REG_64x64 | BG_PRIO(2);
+	REG_BG2HOFS = 0;
+	REG_BG2VOFS = 0;
+	
+	REG_BG3CNT = BG_CBB(0) | BG_SBB(24) | BG_8BPP | BG_REG_32x32 | BG_PRIO(3);
+	REG_BG3HOFS = 0;
+	REG_BG3VOFS = 0;
 
 	// (Charblocks 4 and 5 are for object tiles;
 	// 8bpp tiles 0-255 are in CB 4, tiles 256-511 in CB 5.)
@@ -119,19 +104,18 @@ int main()
 	//Custom spritesheet loading
 	LoadPaletteObjData(0, spritePal, sizeof spritePal);
 	//LoadPaletteObjData(0, spritesheet2Pal, sizeof spritesheet2Pal);
-	LoadPaletteBGData(0, backgroundPal, sizeof backgroundPal);
+	LoadPaletteBGData(0, backgroundnewPal, sizeof backgroundnewPal);
 	LoadTileData(4, 0, spriteTiles, sizeof spriteTiles);
 	//LoadTileData(4, 0, spritesheet2Tiles, sizeof spritesheet2Tiles);
-	LoadTileData(0, 0, backgroundTiles, sizeof backgroundTiles);
+	LoadTileData(0, 0, backgroundnewTiles, sizeof backgroundnewTiles);
 
 	ClearObjects();
 	
 	Level level1;
-	level1.Draw();
-	
 	Buttons buttons;
-
 	int frameCounter = 0;
+	
+	level1.DrawBackground(level1.curdimension);
 	
 	//Main loop
 	while (true)
@@ -139,7 +123,7 @@ int main()
 		buttons.Update();
 		
 		level1.MoveObjects(buttons);
-		//level1.Draw();
+		level1.Draw();
 		level1.UpdateObjects();
 
 		frameCounter = Increment(frameCounter);
@@ -153,6 +137,9 @@ int main()
 }
 
 //Functions
+/**
+Increments counter by 1, and resets to 0 when counter == 60.
+ */
 int Increment(int counter)
 {
 	counter++;

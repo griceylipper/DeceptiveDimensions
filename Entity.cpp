@@ -5,7 +5,9 @@
 #include "Entity.h"
 #include <cstdlib>
 
-//Default constructor
+/**
+Default constructor
+*/
 Entity::Entity()
 {
 	x = 0;
@@ -17,22 +19,26 @@ Entity::Entity()
 	//yVel = STATIONARY;
 	yVel = 0;
 	gravity = 10;
-	weight = 1; 
+	heavy = true; 
 	objnum = 9; 
-	terminalx = 30;
+	terminalx = 27;
 	terminaly = 128;
 	isheld = false;
 	decel = 1;  
 }               
                 
-//Constructor which allows setting of all eight data values
-Entity::Entity(int a, int b, int w, int h, int xV, int yV, int g, int W, int o)
+/**
+Constructor which allows setting of all eight data values
+*/
+Entity::Entity(int a, int b, int w, int h, int xV, int yV, int g, bool H, int o)
 {               
-	Reset(a, b, w, h, xV, yV, g, W, o);
+	Reset(a, b, w, h, xV, yV, g, H, o);
 }               
                 
-//Reset for all eight data values
-void Entity::Reset(int a, int b , int w, int h, int xV, int yV, int g, int W, int o)
+/**
+Reset for all eight data values
+*/
+void Entity::Reset(int a, int b , int w, int h, int xV, int yV, int g, bool H, int o)
 {               
 	x = a;
 	y = b;
@@ -41,15 +47,17 @@ void Entity::Reset(int a, int b , int w, int h, int xV, int yV, int g, int W, in
 	xVel = xV;
 	yVel = yV;
 	gravity = g;
-	weight = W;
+	heavy = H;
 	objnum = o;
-	terminalx = 30;
+	terminalx = 27;
 	terminaly = 128;
 	isheld = false;
 	decel = 1;
 }
 
-//Returns true if entity is colliding with any other object in Level level
+/**
+Returns true if entity is colliding with any other object in Level level
+*/
 bool Entity::IsCollidingLevel(const Level &level)
 {
 	for (int i = 0; i < level.numofplatforms; i++)
@@ -82,7 +90,9 @@ bool Entity::IsCollidingLevel(const Level &level)
 	return false;
 }
 
-//Applies resistance to entities in the x-axis
+/**
+Applies resistance to entities in the x-axis
+*/
 void Entity::ApplyResistance()
 {
 	//if (xVel > STATIONARY)
@@ -97,13 +107,17 @@ void Entity::ApplyResistance()
 	}
 }
 
-//Applies the acceleration of gravity to the objects current velocity
+/**
+Applies the acceleration of gravity to the objects current velocity
+*/
 void Entity::ApplyGravity()
 {
 	yVel += gravity * 0.5;	//Higher multiplier = higher gravity; lowest practical value = 0.25
 }
 
-//Applies the velocities of objects to their positions
+/**
+Applies the velocities of objects to their positions
+*/
 void Entity::ApplyVelocity(Level &level)
 {
 	if (isheld)
@@ -127,12 +141,15 @@ void Entity::ApplyVelocity(Level &level)
 	}
 }
 
-//Steps an entity in direction axis
+/**
+Steps an entity in direction axis
+*/
 void Entity::StepAxis(int &axis, int &axisVel, const Level &level)
 {
 	//Using bit shift operations instead of division fixes continuity problems when axisVel is 
 	//around zero. Adding four offsets the way numbers are always bit shifted towards -ve infinity.
 	axis += ((axisVel + 4) >> 3);
+	//axis += ((axisVel + 16) >> 5);
 	
 	for (int i = 0; i < level.numofplatforms; i++)
 	{
@@ -153,7 +170,9 @@ void Entity::StepAxis(int &axis, int &axisVel, const Level &level)
 	}
 }
 
-//Moves the entity backwards if the entity is colliding with another object
+/**
+Moves the entity backwards if the entity is colliding with another object
+*/
 void Entity::MoveBackIfColliding(int &position, int &axisVel, const Object &obstacle)
 {
 	//If not colliding with any obstacle allow movement
@@ -172,7 +191,9 @@ void Entity::MoveBackIfColliding(int &position, int &axisVel, const Object &obst
 	}
 }
 
-//Set velocities to terminal if they exceed them.
+/**
+Set velocities to terminal if they exceed them.
+*/
 void Entity::ApplyTerminal()
 {
 	if (abs(xVel) > terminalx)
@@ -204,35 +225,43 @@ void Entity::ApplyTerminal()
 	}
 }
 
-//Throws entity in direction direction
+/**
+Throws entity in direction direction
+*/
 void Entity::GetThrown(const Character &player)
 {
 	if (player.direction == player.RIGHT)
 	{
-		xVel = 30;
+		xVel = 30 + player.xVel;
 	}
 	else
 	{
 		//xVel = -30 + BITSHIFT;
-		xVel = -30;
+		xVel = -30 + player.xVel;
 	}
 	yVel = gravity * -4;
 }
 
 
-//Reverses the direction of gravity. Used in the Reverse Gravity Dimension
+/**
+Reverses the direction of gravity. Used in the Reverse Gravity Dimension
+*/
 void Entity::ReverseGravity()
 {
 	gravity *= -1;
 }
 
-//Returns objnum
+/**
+Returns objnum
+*/
 int Entity::GetObjNum()
 {
 	return objnum;
 }
 
-//Returns sign of x
+/**
+Returns sign of x
+*/
 int Entity::PlusOrMinus(int x)
 {
 	if (x > 0)

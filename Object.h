@@ -3,6 +3,9 @@
 #ifndef _OBJECT_H
 #define _OBJECT_H
 
+/**
+2D bodies which have a position, a width and a height.
+*/
 class Object
 {	
 	protected:

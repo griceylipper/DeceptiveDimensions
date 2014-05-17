@@ -28,7 +28,7 @@ OBJECTS = \
 	Character.o \
 	Buttons.o \
 	sprite.o \
-	background.o 
+	backgroundnew.o
 
 # The default target to make if none is specified.
 all: $(TARGET).gba

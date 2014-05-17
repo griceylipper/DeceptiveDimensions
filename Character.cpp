@@ -3,18 +3,26 @@
 #include "Character.h"
 #include "Level.h"
 
+/**
+Default constructor
+*/
 Character::Character()
 {
-	Reset(116, 76, 8, 16, 0, 0, 4, 1, 0, 16, 16);
+	Reset(116, 76, 8, 16, 0, 0, 4, true, 0, 16, 16);
 }
-
-Character::Character(int a, int b, int w, int h, int xV, int yV, int g, int W, int o, int sx,
+/**
+Constructor which allows setting of all parameters at once.
+*/
+Character::Character(int a, int b, int w, int h, int xV, int yV, int g, bool H, int o, int sx,
 					 int sy)
 {
-	Reset(a, b, w, h, xV, yV, g, W, o, sx, sy);
+	Reset(a, b, w, h, xV, yV, g, H, o, sx, sy);
 }
 
-void Character::Reset(int a, int b, int w, int h, int xV, int yV, int g, int W, int o, int sx,
+/**
+Allows setting of all parameters at once
+*/
+void Character::Reset(int a, int b, int w, int h, int xV, int yV, int g, bool H, int o, int sx,
 					  int sy)
 {
 	x = a;
@@ -24,20 +32,23 @@ void Character::Reset(int a, int b, int w, int h, int xV, int yV, int g, int W, 
 	xVel = xV;
 	yVel = yV;
 	gravity = g;
-	weight = W;
+	heavy = H;
 	objnum = o;
 	spawnx = sx;
 	spawny = sy;
 	
 	onplatform = false;
 	isholding = false;
-	terminalx = 30;
+	terminalx = 27;
 	terminaly = 160;
 	decel = 3;
 	accel = 2;
 	direction = RIGHT;
 }
 
+/**
+Takes input from buttons to move character
+*/
 void Character::ReadButtons(Buttons &buttons, Level &level)
 {
 	//Sideways motion. Gives character slight slideyness.
@@ -62,7 +73,9 @@ void Character::ReadButtons(Buttons &buttons, Level &level)
 	}
 }
 
-//Takes input from buttons to pick up or throw a cube in level
+/**
+Makes player pick up a cube if it is next to one, and drop a cube if it is holding one
+*/
 void Character::ManipulateCube(Level &level)
 {
 	if (isholding == false)
@@ -81,7 +94,9 @@ void Character::ManipulateCube(Level &level)
 	}
 }
 
-//Picks up a cube adjacent to the character
+/**
+Picks up first cube adjacent to the character
+*/
 void Character::PickUp(Level &level)
 {
 	for (int i = 0; i < level.numofcubes; i++)
@@ -100,7 +115,9 @@ void Character::PickUp(Level &level)
 	}
 }
 
-//Drops cube being held by character
+/**
+Drops cube being held by character
+*/
 void Character::Drop(Level &level)
 {
 	//Move cube to drop position
@@ -139,7 +156,9 @@ void Character::Drop(Level &level)
 	}
 }
 
-//Throws cube held by character in direction currently facing
+/**
+Throws cube held by character in direction currently facing
+*/
 void Character::ThrowCube(Level &level)
 {
 	if (isholding)
@@ -156,7 +175,9 @@ void Character::ThrowCube(Level &level)
 	}
 }
 
-//Takes input from buttons to move character
+/**
+Takes input from buttons to move character
+*/
 void Character::Movement(Buttons &buttons)
 {
 	//Accelerating
@@ -177,7 +198,9 @@ void Character::Movement(Buttons &buttons)
 	}
 }
 
-//Makes character jump in direction opposite to gravity.
+/**
+Makes character jump in direction opposite to gravity.
+*/
 void Character::Jump(Level &level)
 {
 	onplatform = false;
@@ -209,11 +232,13 @@ void Character::Jump(Level &level)
 	
 	if (onplatform)
 	{
-		yVel = gravity * -11;
+		yVel = -44;
 	}
 }
 
-//Make sure that character stays on screen.
+/**
+Make sure that the character stays on screen.
+*/
 void Character::CheckOnScreen()
 {
 	if (x < 0)
@@ -241,7 +266,9 @@ void Character::CheckOnScreen()
 	}
 }
 
-//Teleports character to spawn location
+/**
+Teleports character to spawn location
+*/
 void Character::Spawn()
 {
 	Move(spawnx, spawny);
