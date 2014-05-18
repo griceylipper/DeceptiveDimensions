@@ -88,6 +88,7 @@ int main()
 	REG_DISPCNT = DCNT_MODE0 | DCNT_BG0 | DCNT_BG1 | DCNT_BG2 | DCNT_OBJ;
 	
 	REG_BG0CNT = BG_CBB(0) | BG_SBB(30) | BG_8BPP | BG_REG_32x32 | BG_PRIO(0);
+	
 	REG_BG1CNT = BG_CBB(0) | BG_SBB(29) | BG_8BPP | BG_REG_32x32 | BG_PRIO(1);
 	
 	REG_BG2CNT = BG_CBB(0) | BG_SBB(25) | BG_8BPP | BG_REG_64x64 | BG_PRIO(2);
@@ -124,7 +125,7 @@ int main()
 		
 		level1.MoveObjects(buttons);
 		level1.Draw();
-		level1.UpdateObjects();
+		level1.UpdateLevelObjects();
 
 		frameCounter = Increment(frameCounter);
 		

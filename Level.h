@@ -14,16 +14,16 @@ class Level : public Object		//x and y coordinates in object refer to offset so 
 {
 	private:
 		//Data
-		int BackgroundOffsetx;
-		int BackgroundOffsety;
+		int backgroundoffsetx;
+		int backgroundoffsety;
 		bool paused;
 		bool indimensionsmenu;
 		
 		//Methods
 		void DimensionMenuControl(Buttons &);
 		void FillScreenblock(int, int, int);
-		int CubeScreenxPosition(Entity &, int);
-		int CubeScreenyPosition(Entity &, int);
+		void ApplyEntityOffsets();
+		void DetermineBackgroundOffsets();
 		
 	public:
 		//Data
@@ -42,7 +42,7 @@ class Level : public Object		//x and y coordinates in object refer to offset so 
 		void Draw();
 		void DrawBackground(dimension);
 		void MoveObjects(Buttons &);
-		void UpdateObjects();
+		void UpdateLevelObjects();
 };
 
 #endif

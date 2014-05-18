@@ -40,7 +40,7 @@ void Character::Reset(int a, int b, int w, int h, int xV, int yV, int g, bool H,
 	onplatform = false;
 	isholding = false;
 	terminalx = 27;
-	terminaly = 160;
+	terminaly = 64;
 	decel = 3;
 	accel = 2;
 	direction = RIGHT;
@@ -103,14 +103,25 @@ void Character::PickUp(Level &level)
 	{
 		if (IsTouching(level.cube[i]))
 		{
-			isholding = true;
-			cubeheld = i;
-			level.cube[i].isheld = true;
-			//Make player taller when carrying cube
-			height += level.cube[i].GetHeight();
-			//Move player up so that added height doesn't reach into the floor
-			y -= level.cube[i].GetHeight();
-			break;
+			int cubeprevx = level.cube[i].Getx();
+			int cubeprevy = level.cube[i].Gety();
+			level.cube[i].Move(x, y - level.cube[i].GetHeight());
+			if (level.cube[i].IsCollidingLevel(level) == false)
+			{
+				isholding = true;
+				cubeheld = i;
+				level.cube[i].isheld = true;
+				//Make player taller when carrying cube
+				height += level.cube[i].GetHeight();
+				//Move player up so that added height doesn't reach into the floor
+				y -= level.cube[i].GetHeight();
+				break;
+			}
+			else
+			{
+				level.cube[i].Move(cubeprevx, cubeprevy);
+				break;
+			}
 		}
 	}
 }
@@ -139,7 +150,6 @@ void Character::Drop(Level &level)
 		height -= level.cube[cubeheld].GetHeight();
 		y += level.cube[cubeheld].GetHeight();
 		//Stops player immediately running underneath a cube just placed
-		//xVel = STATIONARY;
 		xVel = 0;
 	}
 	//Move back if colliding
@@ -232,7 +242,7 @@ void Character::Jump(Level &level)
 	
 	if (onplatform)
 	{
-		yVel = -44;
+		yVel = -41;
 	}
 }
 

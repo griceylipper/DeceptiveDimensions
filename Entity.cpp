@@ -14,15 +14,13 @@ Entity::Entity()
 	y = 0;
 	width = 8;
 	height = 8;
-	//xVel = STATIONARY;
 	xVel = 0;
-	//yVel = STATIONARY;
 	yVel = 0;
 	gravity = 10;
 	heavy = true; 
 	objnum = 9; 
 	terminalx = 27;
-	terminaly = 128;
+	terminaly = 64;
 	isheld = false;
 	decel = 1;  
 }               
@@ -50,7 +48,7 @@ void Entity::Reset(int a, int b , int w, int h, int xV, int yV, int g, bool H, i
 	heavy = H;
 	objnum = o;
 	terminalx = 27;
-	terminaly = 128;
+	terminaly = 64;
 	isheld = false;
 	decel = 1;
 }
@@ -95,12 +93,10 @@ Applies resistance to entities in the x-axis
 */
 void Entity::ApplyResistance()
 {
-	//if (xVel > STATIONARY)
 	if (xVel > 0)
 	{
 		xVel -= decel;
 	}
-	//else if (xVel < STATIONARY)
 	else if (xVel < 0)
 	{
 		xVel += decel;
@@ -123,9 +119,7 @@ void Entity::ApplyVelocity(Level &level)
 	if (isheld)
 	{
 		Move(level.player.Getx(), level.player.Gety());
-		//xVel = STATIONARY;
 		xVel = 0;
-		//yVel = STATIONARY;
 		yVel = 0;
 	}
 	else
@@ -176,7 +170,6 @@ Moves the entity backwards if the entity is colliding with another object
 void Entity::MoveBackIfColliding(int &position, int &axisVel, const Object &obstacle)
 {
 	//If not colliding with any obstacle allow movement
-	//if (IsColliding(obstacle) && (axisVel < 0 || axisVel >= BITSHIFT))
 	if (IsColliding(obstacle) && (axisVel < -4 || axisVel >= 4))
 	{	
 		do
@@ -186,7 +179,6 @@ void Entity::MoveBackIfColliding(int &position, int &axisVel, const Object &obst
 		while (IsColliding(obstacle));				//until it no longer collides
 		
 		//Only set velocity to stationary if entity has collided with an obstacle
-		//axisVel = STATIONARY;
 		axisVel = 0;
 	}
 }
@@ -198,7 +190,6 @@ void Entity::ApplyTerminal()
 {
 	if (abs(xVel) > terminalx)
 	{
-		//if (xVel > STATIONARY)
 		if (xVel > 0)
 		{
 			xVel = terminalx;
@@ -206,20 +197,17 @@ void Entity::ApplyTerminal()
 		else
 		{
 			//Bit shift negative bias means character goes to the left quicker without offset. 
-			//xVel = -terminalx + (2 * BITSHIFT);
 			xVel = -terminalx;
 		}
 	}
 	if (abs(yVel) > terminaly)
 	{
-		//if (yVel > STATIONARY)
 		if (yVel > 0)
 		{
 			yVel = terminaly;
 		}
 		else
 		{
-			//yVel = -terminaly + (2 * BITSHIFT);
 			yVel = -terminaly;
 		}
 	}
@@ -236,12 +224,47 @@ void Entity::GetThrown(const Character &player)
 	}
 	else
 	{
-		//xVel = -30 + BITSHIFT;
 		xVel = -30 + player.xVel;
 	}
 	yVel = gravity * -4;
 }
 
+/**
+Determines the x and y positions of an entity relative to the screen
+*/
+void Entity::SetScreenPosition(int &backgroundoffsetx, int &backgroundoffsety)
+{
+	drawx = GetScreenAxis(x, width, 512, backgroundoffsetx, SCREEN_WIDTH);
+	drawy = GetScreenAxis(y, height, 256, backgroundoffsety, SCREEN_HEIGHT);
+}
+
+/**
+Sets the position along an axis of an entity relative to the screen's position
+*/
+int Entity::GetScreenAxis(int &axis, int &dimensioninaxis, const int OBJECT_OFFSET, 
+							int &backgroundoffsetaxis, const int SCREEN_DIMENSION)
+{
+	int newposition;
+	bool onawkwardedgeofscreen = false;
+	
+	//If position of entity is partially off screen in -ve direction
+	if (axis - backgroundoffsetaxis < dimensioninaxis)
+	{
+		newposition = axis - backgroundoffsetaxis + OBJECT_OFFSET;
+		onawkwardedgeofscreen = true;
+	}
+	else
+	{
+		newposition = axis - backgroundoffsetaxis;
+	}
+	
+	if ((newposition > SCREEN_DIMENSION) && !onawkwardedgeofscreen)
+	{
+		newposition = SCREEN_DIMENSION;		//Gets rid of glitchy squares appearing on screen
+	}
+
+	return newposition;
+}
 
 /**
 Reverses the direction of gravity. Used in the Reverse Gravity Dimension
