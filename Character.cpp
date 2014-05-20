@@ -242,7 +242,7 @@ void Character::TryJumping(Level &level)
 	//Jump
 	if (onplatform)
 	{
-		yVel = -41;
+		yVel = -40;
 	}
 }
 

@@ -23,6 +23,9 @@ class Level : public Object		//x and y coordinates in object refer to offset so 
 		void ApplyEntityOffsets();
 		void DetermineBackgroundOffsets();
 		void SetTileInCorrectScreenblock(int, int, int, int);
+		void DrawDoor();
+		void DrawDimensionsMenu();
+		void DrawDimensionsCursor();
 		
 	public:
 		//Data

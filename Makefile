@@ -30,7 +30,7 @@ OBJECTS = \
 	Buttons.o \
 	TitleScreen.o \
 	spritesheet3.o \
-	backgroundnew.o
+	backgroundnewnew.o
 
 # The default target to make if none is specified.
 all: $(TARGET).gba

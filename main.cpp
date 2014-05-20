@@ -56,7 +56,7 @@ New features:
 #include "spritesheet3.h"
 #include "TitleScreen.h"
 //#include "spritesheet2.h"
-#include "backgroundnew.h"
+#include "backgroundnewnew.h"
 #include "Object.h"
 #include "Entity.h"
 #include "Character.h"
@@ -131,9 +131,9 @@ int main()
 	// }
 	
 	LoadPaletteObjData(0, spritesheet3Pal, sizeof spritesheet3Pal);
-	LoadPaletteBGData(0, backgroundnewPal, sizeof backgroundnewPal);
+	LoadPaletteBGData(0, backgroundnewnewPal, sizeof backgroundnewnewPal);
 	LoadTileData(4, 0, spritesheet3Tiles, sizeof spritesheet3Tiles);
-	LoadTileData(0, 0, backgroundnewTiles, sizeof backgroundnewTiles);
+	LoadTileData(0, 0, backgroundnewnewTiles, sizeof backgroundnewnewTiles);
 	
 	Level level1;
 	

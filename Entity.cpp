@@ -17,14 +17,14 @@ Entity::Entity()
 	xVel = 0;
 	yVel = 0;
 	gravity = 10;
-	heavy = true; 
-	objnum = 9; 
+	heavy = true;
+	objnum = 9;
 	terminalx = 27;
 	terminaly = 64;
 	isheld = false;
-	decel = 1;  
+	decel = 1;
 }               
-                
+
 /**
 Constructor which allows setting of all eight data values
 */
@@ -32,7 +32,7 @@ Entity::Entity(int a, int b, int w, int h, int xV, int yV, int g, bool H, int o)
 {               
 	Reset(a, b, w, h, xV, yV, g, H, o);
 }               
-                
+
 /**
 Reset for all eight data values
 */

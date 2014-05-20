@@ -18,17 +18,18 @@ Level::Level()
 	curdimension = NORMAL;
 	
 	//Default boundaries
-	platform[0].Reset(0, 0, width, 8);
-	platform[1].Reset(0, 0, 8, height);
-	platform[2].Reset(0, height - 8, width, 8);
-	platform[3].Reset(width - 8, 0, 8, height);
-	platform[4].Reset(48, 256, width - 48, 8);
+	platform[0].Reset(0, 0, width, 16);
+	platform[1].Reset(0, 0, 16, height);
+	platform[2].Reset(0, height - 16, width, 16);
+	platform[3].Reset(width - 16, 0, 16, height);
+	//The rest of the platforms
+	platform[4].Reset(48, 256, width - 48, 16);
 	platform[5].Reset(16, 304, 16, 16);
 	platform[6].Reset(32, 344, 16, 16);
-	platform[7].Reset(48, 384, width - 48, 8);
+	platform[7].Reset(48, 384, width - 48, 16);
 	platform[8].Reset(16, 432, 16, 16);
 	platform[9].Reset(32, 472, 16, 16);
-	platform[10].Reset(48, 128, width - 48, 8);
+	platform[10].Reset(48, 128, width - 48, 16);
 	platform[11].Reset(16, 176, 16, 16);
 	platform[12].Reset(32, 216, 16, 16);
 	
@@ -42,8 +43,8 @@ Level::Level()
 	cube[3].Reset(40, 88, 8, 8, 0, 0, 4, true, 4);
 	
 	//Door/Switch placement
-	doorswitch.door.Reset(width - 32, height - 24, 16, 16);
-	doorswitch.pressureplate.Reset(width - 48, height - 8, 16, 16);
+	doorswitch.door.Reset(width - 40, height - 48, 16, 32);
+	doorswitch.pressureplate.Reset(width - 64, height - 16, 16, 8);
 }
 
 /**
@@ -113,10 +114,32 @@ void Level::DimensionMenuControl(Buttons &buttons)
 			curdimension = NORMAL;
 		}
 	}
+	else if (buttons.LeftJustPressed())
+	{
+		if (curdimension == NORMAL)
+		{
+			curdimension = SLOWMOTION;
+		}
+		else if (curdimension == ANTIGRAVITY)
+		{
+			curdimension = NORMAL;
+		}
+	}
+	else if (buttons.RightJustPressed())
+	{
+		if (curdimension == NORMAL)
+		{
+			curdimension = ANTIGRAVITY;
+		}
+		else if (curdimension == SLOWMOTION)
+		{
+			curdimension = NORMAL;
+		}
+	}
 }
 
 /**
-Draws background of level
+Draws background of the level
 */
 void Level::Draw()
 {	
@@ -125,45 +148,150 @@ void Level::Draw()
 		DrawBackground(curdimension);
 	}
 	
-	if (doorswitch.doorcuropen)
-	{
-		SetTile(28, (doorswitch.door.Getx() / 8) - 32, (doorswitch.door.Gety() / 8) - 32, 74);
-		SetTile(28, (doorswitch.door.Getx() / 8) -31, (doorswitch.door.Gety() / 8) - 32, 74);
-	}
-	else
-	{
-		SetTile(28, (doorswitch.door.Getx() / 8) - 32, (doorswitch.door.Gety() / 8) - 32, 0);
-		SetTile(28, (doorswitch.door.Getx() / 8) -31, (doorswitch.door.Gety() / 8) - 32, 0);
-	}
+	DrawDoor();
 	
 	//Clear dimensions menu and cursor
 	for (int screenblock = 29; screenblock < 31; screenblock++)
 	{
-		SetTile(screenblock, SCREEN_WIDTH / 16, SCREEN_HEIGHT / 16, 0);			//Normal icon space
-		SetTile(screenblock, SCREEN_WIDTH / 16, (SCREEN_HEIGHT / 16) - 1, 0);	//Fluffy icon space
-		SetTile(screenblock, SCREEN_WIDTH / 16, (SCREEN_HEIGHT / 16) + 1, 0);	//Heavy icon space
+		for (int y = 0; y < 6; y++)
+		{
+			for (int x = 0; x < 6; x++)
+			{
+				SetTile(screenblock, x, y, 0);
+			}
+		}
 	}
 	
 	if (indimensionsmenu)
 	{
-		SetTile(29, SCREEN_WIDTH / 16, SCREEN_HEIGHT / 16, 4);			//Normal icon
-		SetTile(29, SCREEN_WIDTH / 16, (SCREEN_HEIGHT / 16) - 1, 8);	//Fluffy icon
-		SetTile(29, SCREEN_WIDTH / 16, (SCREEN_HEIGHT / 16) + 1, 22);	//Heavy icon
-		
-		//Cursor
-		if (curdimension == NORMAL)
-		{
-			SetTile(30, SCREEN_WIDTH / 16, SCREEN_HEIGHT / 16, 74);
-		}
-		else if (curdimension == FLUFFY)
-		{
-			SetTile(30, SCREEN_WIDTH / 16, (SCREEN_HEIGHT / 16) - 1, 74);
-		}
-		else
-		{
-			SetTile(30, SCREEN_WIDTH / 16, (SCREEN_HEIGHT / 16) + 1, 74);
-		}
+		DrawDimensionsMenu();
+		DrawDimensionsCursor();
 	}
+}
+
+/**
+Draws the icons of the dimensions in the dimensions menu
+*/
+void Level::DrawDimensionsMenu()
+{
+	int wallpapertiles[4] = {1, 2, 17, 18};
+	
+	//Normal icon
+	SetTile(29, 2, 2, wallpapertiles[0]);
+	SetTile(29, 3, 2, wallpapertiles[1]);
+	SetTile(29, 2, 3, wallpapertiles[2]);
+	SetTile(29, 3, 3, wallpapertiles[3]);
+	
+	for (int i = 0; i < 4; i++)
+	{
+		wallpapertiles[i] += 2;
+	}
+	
+	//Fluffy icon
+	SetTile(29, 2, 0, wallpapertiles[0]);
+	SetTile(29, 3, 0, wallpapertiles[1]);
+	SetTile(29, 2, 1, wallpapertiles[2]);
+	SetTile(29, 3, 1, wallpapertiles[3]);
+	
+	for (int i = 0; i < 4; i++)
+	{
+		wallpapertiles[i] += 2;
+	}
+	
+	//Heavy icon
+	SetTile(29, 2, 4, wallpapertiles[0]);
+	SetTile(29, 3, 4, wallpapertiles[1]);
+	SetTile(29, 2, 5, wallpapertiles[2]);
+	SetTile(29, 3, 5, wallpapertiles[3]);
+	
+	for (int i = 0; i < 4; i++)
+	{
+		wallpapertiles[i] += 2;
+	}
+	
+	//Slow motion icon
+	SetTile(29, 0, 2, wallpapertiles[0]);
+	SetTile(29, 1, 2, wallpapertiles[1]);
+	SetTile(29, 0, 3, wallpapertiles[2]);
+	SetTile(29, 1, 3, wallpapertiles[3]);
+	
+	for (int i = 0; i < 4; i++)
+	{
+		wallpapertiles[i] += 2;
+	}
+	
+	//Anti gravity icon
+	SetTile(29, 4, 2, wallpapertiles[0]);
+	SetTile(29, 5, 2, wallpapertiles[1]);
+	SetTile(29, 4, 3, wallpapertiles[2]);
+	SetTile(29, 5, 3, wallpapertiles[3]);
+}
+
+/**
+Draws the cursor for selecting dimensions in the dimensions menu
+*/
+void Level::DrawDimensionsCursor()
+{
+	int cursorx = 0;
+	int cursory = 0;
+	if (curdimension == NORMAL)
+	{
+		cursorx = 2;
+		cursory = 2;
+	}
+	else if (curdimension == FLUFFY)
+	{
+		cursorx = 2;
+		cursory = 0;
+	}
+	else if (curdimension == HEAVY)
+	{
+		cursorx = 2;
+		cursory = 4;
+	}
+	else if (curdimension == SLOWMOTION)
+	{
+		cursorx = 0;
+		cursory = 2;
+	}
+	else
+	{
+		cursorx = 4;
+		cursory = 2;
+	}
+	
+	SetTile(30, cursorx, cursory, 11);
+	SetTile(30, cursorx + 1, cursory, 12);
+	SetTile(30, cursorx, cursory + 1, 27);
+	SetTile(30, cursorx + 1, cursory + 1, 28);
+}
+
+/**
+Draws the level's door.
+*/
+void Level::DrawDoor()
+{
+	int doortiles[8] = {67, 68, 83, 84, 83, 84, 83, 84};
+	int doortileoffset = 0;
+	
+	if (!doorswitch.doorcuropen)
+	{
+		doortileoffset = 2;
+	}
+	
+	for (int i = 0; i < 8; i++)
+	{
+		doortiles[i] += doortileoffset;
+	}
+	
+	SetTileInCorrectScreenblock(25, (doorswitch.door.Getx() / 8), (doorswitch.door.Gety() / 8), doortiles[0]);
+	SetTileInCorrectScreenblock(25, (doorswitch.door.Getx() / 8) + 1, (doorswitch.door.Gety() / 8), doortiles[1]);
+	SetTileInCorrectScreenblock(25, (doorswitch.door.Getx() / 8), (doorswitch.door.Gety() / 8) + 1, doortiles[2]);
+	SetTileInCorrectScreenblock(25, (doorswitch.door.Getx() / 8) + 1, (doorswitch.door.Gety() / 8) + 1, doortiles[3]);
+	SetTileInCorrectScreenblock(25, (doorswitch.door.Getx() / 8), (doorswitch.door.Gety() / 8) + 2, doortiles[4]);
+	SetTileInCorrectScreenblock(25, (doorswitch.door.Getx() / 8) + 1, (doorswitch.door.Gety() / 8) + 2, doortiles[5]);
+	SetTileInCorrectScreenblock(25, (doorswitch.door.Getx() / 8), (doorswitch.door.Gety() / 8) + 3, doortiles[6]);
+	SetTileInCorrectScreenblock(25, (doorswitch.door.Getx() / 8) + 1, (doorswitch.door.Gety() / 8) + 3, doortiles[7]);
 }
 
 /**
@@ -171,28 +299,33 @@ Draws the background of the level;
 */
 void Level::DrawBackground(dimension curdimension)
 {
-	int wallpapertiles[4];
+	//Dimensions graphics are set out regularly, so I can do this:
+	int wallpapertiles[4] = {1, 2, 17, 18};
+	int platformtiles[4] = {33, 34, 49, 50};
 	
-	if (curdimension == NORMAL)
+	int dimensiontileoffset = 0;
+	
+	if (curdimension == FLUFFY)
 	{
-		wallpapertiles[0] = 4;
-		wallpapertiles[1] = 5;
-		wallpapertiles[2] = 20;
-		wallpapertiles[3] = 21;
+		dimensiontileoffset = 2;
 	}
-	else if (curdimension == FLUFFY)
+	else if (curdimension == HEAVY)
 	{
-		wallpapertiles[0] = 8;
-		wallpapertiles[1] = 8;
-		wallpapertiles[2] = 8;
-		wallpapertiles[3] = 8;
+		dimensiontileoffset = 4;
 	}
-	else
+	else if (curdimension == SLOWMOTION)
 	{
-		wallpapertiles[0] = 6;
-		wallpapertiles[1] = 7;
-		wallpapertiles[2] = 22;
-		wallpapertiles[3] = 23;
+		dimensiontileoffset = 6;
+	}
+	else if (curdimension == ANTIGRAVITY)
+	{
+		dimensiontileoffset = 8;
+	}
+	
+	for (int i = 0; i < 4; i++)
+	{
+		wallpapertiles[i] += dimensiontileoffset;
+		platformtiles[i] += dimensiontileoffset;
 	}
 	
 	//Wallpaper
@@ -200,10 +333,6 @@ void Level::DrawBackground(dimension curdimension)
 	{
 		for (int x = 0; x < 64; x += 2)
 		{
-			// SetTileInCorrectScreenblock(x, y, wallpapertiles[0]);
-			// SetTileInCorrectScreenblock(x + 1, y, wallpapertiles[1]);
-			// SetTileInCorrectScreenblock(x, y + 1, wallpapertiles[2]);
-			// SetTileInCorrectScreenblock(x + 1, y + 1, wallpapertiles[3]);
 			SetTileInCorrectScreenblock(25, x, y, wallpapertiles[0]);
 			SetTileInCorrectScreenblock(25, x + 1, y, wallpapertiles[1]);
 			SetTileInCorrectScreenblock(25, x, y + 1, wallpapertiles[2]);
@@ -214,11 +343,14 @@ void Level::DrawBackground(dimension curdimension)
 	//Platforms
 	for (int i = 0; i < numofplatforms; i++)
 	{
-		for (int y = platform[i].Gety() / 8; y < platform[i].GetBottom() / 8; y++)
+		for (int y = platform[i].Gety() / 8; y < platform[i].GetBottom() / 8; y += 2)
 		{
-			for (int x = platform[i].Getx() / 8; x < platform[i].GetRight() / 8; x++)
+			for (int x = platform[i].Getx() / 8; x < platform[i].GetRight() / 8; x += 2)
 			{
-				SetTileInCorrectScreenblock(25, x, y, 103);
+				SetTileInCorrectScreenblock(25, x, y, platformtiles[0]);
+				SetTileInCorrectScreenblock(25, x + 1, y, platformtiles[1]);
+				SetTileInCorrectScreenblock(25, x, y + 1, platformtiles[2]);
+				SetTileInCorrectScreenblock(25, x + 1, y + 1, platformtiles[3]);
 			}
 		}
 	}
@@ -228,9 +360,10 @@ void Level::DrawBackground(dimension curdimension)
 		y < doorswitch.pressureplate.GetBottom() / 8; y++)
 	{
 		for (int x = doorswitch.pressureplate.Getx() / 8;
-			x < doorswitch.pressureplate.GetRight() / 8; x++)
+			x < doorswitch.pressureplate.GetRight() / 8; x += 2)
 		{
-			SetTile(28, x - 32, y - 32, 3);
+			SetTileInCorrectScreenblock(25, x, y, 65);
+			SetTileInCorrectScreenblock(25, x + 1, y, 66);
 		}
 	}
 }
