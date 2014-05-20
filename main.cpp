@@ -53,7 +53,8 @@ New features:
 #include <string.h>
 #include "gba.h"
 #include "font.h"
-#include "sprite.h"
+#include "spritesheet3.h"
+#include "TitleScreen.h"
 //#include "spritesheet2.h"
 #include "backgroundnew.h"
 #include "Object.h"
@@ -61,6 +62,7 @@ New features:
 #include "Character.h"
 #include "Level.h"
 #include "Buttons.h"
+#include "DoorSwitch.h"
 
 //Function prototypes
 int Increment(int);
@@ -103,22 +105,46 @@ int main()
 	// 8bpp tiles 0-255 are in CB 4, tiles 256-511 in CB 5.)
 	
 	//Custom spritesheet loading
-	LoadPaletteObjData(0, spritePal, sizeof spritePal);
-	//LoadPaletteObjData(0, spritesheet2Pal, sizeof spritesheet2Pal);
-	LoadPaletteBGData(0, backgroundnewPal, sizeof backgroundnewPal);
-	LoadTileData(4, 0, spriteTiles, sizeof spriteTiles);
-	//LoadTileData(4, 0, spritesheet2Tiles, sizeof spritesheet2Tiles);
-	LoadTileData(0, 0, backgroundnewTiles, sizeof backgroundnewTiles);
-
+	// LoadPaletteBGData(0, TitleScreenPal, sizeof TitleScreenPal);
+	// LoadTileData(0, 0, TitleScreenTiles, sizeof TitleScreenTiles);
+	
 	ClearObjects();
 	
-	Level level1;
 	Buttons buttons;
 	int frameCounter = 0;
 	
+	// for (int y = 0; y < (SCREEN_HEIGHT / 8); y++)
+	// {
+		// for (int x = 0; x < (SCREEN_WIDTH / 8); x++)
+		// {
+			// SetTile(25, x, y, x + (y * (SCREEN_WIDTH / 8)));
+		// }
+	// }
+	
+	// //Title screen (under construction)
+	// while (true)
+	// {
+		// if (buttons.StartJustPressed())
+		// {
+			// break;
+		// }
+	// }
+	
+	LoadPaletteObjData(0, spritesheet3Pal, sizeof spritesheet3Pal);
+	LoadPaletteBGData(0, backgroundnewPal, sizeof backgroundnewPal);
+	LoadTileData(4, 0, spritesheet3Tiles, sizeof spritesheet3Tiles);
+	LoadTileData(0, 0, backgroundnewTiles, sizeof backgroundnewTiles);
+	
+	Level level1;
+	
+	for (int screenblock = 21; screenblock < 31; screenblock++)
+	{
+		level1.FillScreenblock(screenblock, 0);
+	}
+	
 	level1.DrawBackground(level1.curdimension);
 	
-	//Main loop
+	//Main game loop
 	while (true)
 	{
 		buttons.Update();
@@ -131,7 +157,6 @@ int main()
 		
 		WaitVSync();
 		FlipBuffers();
-		UpdateObjects();
 	}
 
 	return 0;

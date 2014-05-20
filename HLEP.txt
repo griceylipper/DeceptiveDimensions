@@ -1,0 +1,267 @@
+GameBoy Advance objects not being displayed in correct place when player is moving
+
+
+
+This might take a while to explain - go grab a snack while you're reading this.
+
+I am developing a 2D puzzle platforming game for the Gameboy Advance in C++ (I'm a fairly new programmer). Up until last night, I have been making a phyics engine (just some axis aligned bounding box stuff) which I was testing using a level which was the size of the GBA's screen. However, the final game will demand having a level which is bigger than the size of the screen, and so I have tried to implement a system which allows the screen of the GBA to follow the player, and as a result I have to draw everything on screen relative to the screen's offsets.
+
+However, I am having trouble when I display cubes which can be picked up and manipulated in the level. Whenever the player moves, the locations of the cubes on screen appear to drift away from their actual positions in the level. It's like where the cubes are drawn is a single frame out of sync - when I pause the game when the player is moving, the boxes are displayed in exactly the right position, but when I unpause, they drift out of place until the player stops moving again.
+
+A brief description of my classes - there is a base class called Object which defines (x, y) position and a width and height, there is an Entity class which inherits from Object and adds velocity components, and a Character class which inherits from Entity and adds movement functions. My player is a Character object, while the cubes I want to pick up are an array of Entity objects. Both the player and cubes array are members of the Level class, which also inherits from Object.
+
+I suspect the problem lies in the last code sample, however, for full comprehension of what I am trying to do I have laid out the samples in a slightly more logical order.
+
+Here are the truncated headers of Level:
+
+    class Level : public Object
+    {
+    	private:
+    		//Data
+    		int backgroundoffsetx;
+    		int backgroundoffsety;
+    		
+    		//Methods
+    		void ApplyEntityOffsets();
+    		void DetermineBackgroundOffsets();
+    		
+    	public:
+    		//Data
+    		enum {MAXCUBES = 20};
+
+    		Entity cube[MAXCUBES];
+    		Character player;
+    		int numofcubes;
+    		
+    		//Methods
+    		Level();
+    		void Draw();
+    		void DrawBackground(dimension);
+    		void UpdateLevelObjects();
+    };
+
+...and Entity:
+
+    class Entity : public Object
+    {	
+    	private:
+    		//Methods
+    		int GetScreenAxis(int &, int &, const int, int &, const int);
+    
+    	public:	
+    		//Data
+    		int drawx;	//Where the Entity's x position is relative to the screen
+    		int drawy;	//Where the Entity's y position is relative to the screen
+    		
+    		//Methods
+    		void SetScreenPosition(int &, int &);
+    };
+
+Here are the relevant parts of my main game loop:
+
+    //Main loop
+    while (true)
+    {
+    	...
+    	
+    	level.MoveObjects(buttons);
+    	level.Draw();
+    	level.UpdateLevelObjects();
+    
+    	...
+    }
+
+Because of the way sprites are displayed in the correct places when paused, I'm pretty sure the problem does not lie in `MoveObjects()`, which determines the poitions of the player and cubes in the level relative to the level. So that leaves `Draw()` and `UpdateLevelObjects()`.
+
+Ok, `Draw()`. I'm providing this in the event that it is not my cubes that are being displayed incorrectly, but the level and platforms upon which they sit (I don't think this is the problem, but possibly). `Draw()` only calls one relevant function, `DrawBackground()`:
+
+    /**
+    Draws the background of the level;
+    */
+    void Level::DrawBackground(dimension curdimension)
+    {
+    	...
+    	
+    	//Platforms
+    	for (int i = 0; i < numofplatforms; i++)
+    	{
+    		for (int y = platform[i].Gety() / 8 ; y < platform[i].GetBottom() / 8; y++)
+    		{
+    			for (int x = platform[i].Getx() / 8; x < platform[i].GetRight() / 8; x++)
+    			{
+    				if (x < 32)
+    				{
+    					if (y < 32)
+    					{
+    						SetTile(25, x, y, 103);
+    					}
+    					else
+    					{
+    						SetTile(27, x, y - 32, 103);
+    					}
+    				}
+    				else
+    				{
+    					if (y < 32)
+    					{
+    						SetTile(26, x - 32, y, 103);
+    					}
+    					else
+    					{
+    						SetTile(28, x - 32, y - 32, 103);
+    					}
+    				}
+    			}
+    		}
+    	}
+    }
+
+This inevitably requires some amount of explaining. My platforms are measured in pixels, but displayed in tiles of 8x8 pixels, so I have to divide their sizes for this loop. `SetTile()` firstly requires a screenblock number. The background layer I am using to display the platforms is 64x64 tiles, and so requires 2x2 screenblocks of 32x32 tiles each to display them all. The screenblocks are numbered 25-28. 103 is the tile number in my tilemap.
+
+Here's `UpdateLevelObjects()`:
+
+    /**
+    Updates all gba objects in Level
+    */
+    void Level::UpdateLevelObjects()
+    {
+    	DetermineBackgroundOffsets();
+    	ApplyEntityOffsets();
+    	
+    	REG_BG2HOFS = backgroundoffsetx;
+    	REG_BG3HOFS = backgroundoffsetx / 2;	
+    	REG_BG2VOFS = backgroundoffsety;
+    	REG_BG3VOFS = backgroundoffsety / 2;
+    	
+    	...
+    	
+    	//Code which sets player position (drawx, drawy);
+    	
+    	//Draw cubes
+    	for (int i = 0; i < numofcubes; i++)
+    	{
+    		//Code which sets cube[i] position to (drawx, drawy);
+    	}
+    }
+
+The `REG_BG` bits are the registers of the GBA which allow the background layers to be offset vertically and horizontally by a number of pixels. Those offsets are first calculated in `DetermineBackgroundOffsets()`:
+
+    /**
+    Calculate the offsets of screen based on where the player is in the level
+    */
+    void Level::DetermineBackgroundOffsets()
+    {
+    	if (player.Getx() < SCREEN_WIDTH / 2)	//If player is less than half the width of the screen away from the left wall of the level
+    	{
+    		backgroundoffsetx = 0;
+    	}
+    	else if (player.Getx() > width - (SCREEN_WIDTH / 2))	//If player is less than half the width of the screen away from the right wall of the level
+    	{
+    		backgroundoffsetx = width - SCREEN_WIDTH;	
+    	}
+    	else	//If the player is in the middle of the level
+    	{
+    		backgroundoffsetx = -((SCREEN_WIDTH / 2) - player.Getx());
+    	}
+    	
+    	if (player.Gety() < SCREEN_HEIGHT / 2)
+    	{
+    		backgroundoffsety = 0;
+    	}
+    	else if (player.Gety() > height - (SCREEN_HEIGHT / 2))
+    	{
+    		backgroundoffsety = height - SCREEN_HEIGHT;	
+    	}
+    	else
+    	{
+    		backgroundoffsety = -((SCREEN_HEIGHT / 2) - player.Gety());
+    	}
+    }
+
+Just to be clear, `width` refers to the width of the level in pixels, while `SCREEN_WIDTH` refers to the constant value of the width of the GBA's screen. Also, sorry for the lazy repetition.
+
+Here's `ApplyEntityOffsets`:
+
+    /**
+    Determines the offsets that keep the player in the middle of the screen
+    */
+    void Level::ApplyEntityOffsets()
+    {
+    	//Player offsets
+    	if (player.Getx() <= SCREEN_WIDTH / 2)
+    	{
+    		player.drawx = player.Getx();
+    	}
+    	else if ((player.Getx() > SCREEN_WIDTH / 2) && (player.Getx() < width - SCREEN_WIDTH / 2))
+    	{
+    		player.drawx = SCREEN_WIDTH / 2;
+    	}
+    	else
+    	{
+    		player.drawx = player.Getx() - width + SCREEN_WIDTH;
+    	}
+    	
+    	if (player.Gety() <= SCREEN_HEIGHT / 2)
+    	{
+    		player.drawy = player.Gety();
+    	}
+    	else if ((player.Gety() > SCREEN_HEIGHT / 2) && (player.Gety() < height - SCREEN_HEIGHT / 2))
+    	{
+    		player.drawy = SCREEN_HEIGHT / 2;
+    	}
+    	else
+    	{
+    		player.drawy = player.Gety() - height + SCREEN_HEIGHT;
+    	}
+    
+    	//Cube offsets
+    	for (int i = 0; i < numofcubes; i++)
+    	{
+    		cube[i].SetScreenPosition(backgroundoffsetx, backgroundoffsety);
+    	}
+    }
+
+Again, sorry about repetition. Basically this centres the player on the screen when it is in the middle of the level, and allows it to move to edges when the screen bumps against the edge of the level. As for the cubes:
+
+    /**
+    Determines the x and y positions of an entity relative to the screen
+    */
+    void Entity::SetScreenPosition(int &backgroundoffsetx, int &backgroundoffsety)
+    {
+    	drawx = GetScreenAxis(x, width, 512, backgroundoffsetx, SCREEN_WIDTH);
+    	drawy = GetScreenAxis(y, height, 256, backgroundoffsety, SCREEN_HEIGHT);
+    }
+
+Bear with me - I will explain the 512 and 256 in a moment. Here's `GetScreenAxis()`:
+
+    /**
+    Sets the position along an axis of an entity relative to the screen's position
+    */
+    int Entity::GetScreenAxis(int &axis, int &dimensioninaxis, const int OBJECT_OFFSET, 
+    							int &backgroundoffsetaxis, const int SCREEN_DIMENSION)
+    {
+    	int newposition;
+    	bool onawkwardedgeofscreen = false;
+    	
+    	//If position of entity is partially off screen in -ve direction
+    	if (axis - backgroundoffsetaxis < dimensioninaxis)
+    	{
+    		newposition = axis - backgroundoffsetaxis + OBJECT_OFFSET;
+    		onawkwardedgeofscreen = true;
+    	}
+    	else
+    	{
+    		newposition = axis - backgroundoffsetaxis;
+    	}
+    	
+    	if ((newposition > SCREEN_DIMENSION) && !onawkwardedgeofscreen)
+    	{
+    		newposition = SCREEN_DIMENSION;		//Gets rid of glitchy squares appearing on screen
+    	}
+    
+    	return newposition;
+    }
+
+`OBJECT_OFFSET` (the 512 and 256) is a GBA specific thing - setting an object's x or y position to a negative number won't do what you intend normally - it messes up the sprite used to display it. But there's a trick: if you want to set a negative X position, you can add 512 to the negative number, and the sprite will appear in the right place (e.g. if you were going to set it to -1, then set it to 512 + -1 = 511). Similarly, adding 256 works for negative Y positions (this is all relative to the screen, not the level). The last if statement keeps the cubes displayed fractionally off the screen if they would normally be displayed further away, as trying to display them too far away results in glitchy squares appearing, again GBA specific stuff.
+
+You are an absolute saint if you have come this far having read everything. If you can find what potentially might be causing the drifting cubes, I will be VERY grateful. Also, any tips to generally improve my code will be appreciated.

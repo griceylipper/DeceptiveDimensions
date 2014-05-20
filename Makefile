@@ -26,8 +26,10 @@ OBJECTS = \
 	Level.o \
 	Entity.o \
 	Character.o \
+	DoorSwitch.o \
 	Buttons.o \
-	sprite.o \
+	TitleScreen.o \
+	spritesheet3.o \
 	backgroundnew.o
 
 # The default target to make if none is specified.

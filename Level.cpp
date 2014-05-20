@@ -11,7 +11,7 @@ Level::Level()
 	y = 0;
 	width = 512;
 	height = 512;
-	numofplatforms = 8;
+	numofplatforms = 13;
 	numofcubes = 4;
 	paused = false;
 	indimensionsmenu = false;
@@ -26,6 +26,11 @@ Level::Level()
 	platform[5].Reset(16, 304, 16, 16);
 	platform[6].Reset(32, 344, 16, 16);
 	platform[7].Reset(48, 384, width - 48, 8);
+	platform[8].Reset(16, 432, 16, 16);
+	platform[9].Reset(32, 472, 16, 16);
+	platform[10].Reset(48, 128, width - 48, 8);
+	platform[11].Reset(16, 176, 16, 16);
+	platform[12].Reset(32, 216, 16, 16);
 	
 	//Player
 	player.Reset(116, 76, 8, 16, 0, 0, 4, 1, 0, 16, 16);
@@ -35,6 +40,10 @@ Level::Level()
 	cube[1].Reset(24, 72, 8, 8, 0, 0, 4, true, 2);
 	cube[2].Reset(32, 80, 8, 8, 0, 0, 4, true, 3);
 	cube[3].Reset(40, 88, 8, 8, 0, 0, 4, true, 4);
+	
+	//Door/Switch placement
+	doorswitch.door.Reset(width - 32, height - 24, 16, 16);
+	doorswitch.pressureplate.Reset(width - 48, height - 8, 16, 16);
 }
 
 /**
@@ -60,13 +69,14 @@ void Level::MoveObjects(Buttons &buttons)
 	{
 		player.ReadButtons(buttons, *this);
 		player.ApplyVelocity(*this);
-		//player.CheckOnScreen();
 		
 		for (int i = 0; i < numofcubes; i++)
 		{
 			cube[i].ApplyVelocity(*this);
 		}
 	}
+	
+	doorswitch.CheckPressurePlate(*this);
 	
 	if (indimensionsmenu)
 	{
@@ -79,6 +89,8 @@ Deals with button presses in dimensions menu
 */
 void Level::DimensionMenuControl(Buttons &buttons)
 {
+	prevdimension = curdimension;
+	
 	if (buttons.UpJustPressed())
 	{
 		if (curdimension == NORMAL)
@@ -101,7 +113,6 @@ void Level::DimensionMenuControl(Buttons &buttons)
 			curdimension = NORMAL;
 		}
 	}
-	prevdimension = curdimension;
 }
 
 /**
@@ -112,6 +123,17 @@ void Level::Draw()
 	if (curdimension != prevdimension)
 	{
 		DrawBackground(curdimension);
+	}
+	
+	if (doorswitch.doorcuropen)
+	{
+		SetTile(28, (doorswitch.door.Getx() / 8) - 32, (doorswitch.door.Gety() / 8) - 32, 74);
+		SetTile(28, (doorswitch.door.Getx() / 8) -31, (doorswitch.door.Gety() / 8) - 32, 74);
+	}
+	else
+	{
+		SetTile(28, (doorswitch.door.Getx() / 8) - 32, (doorswitch.door.Gety() / 8) - 32, 0);
+		SetTile(28, (doorswitch.door.Getx() / 8) -31, (doorswitch.door.Gety() / 8) - 32, 0);
 	}
 	
 	//Clear dimensions menu and cursor
@@ -149,45 +171,95 @@ Draws the background of the level;
 */
 void Level::DrawBackground(dimension curdimension)
 {
-	//Wallpaper
-	for (int y = 0; y < 32; y++)
+	int wallpapertiles[4];
+	
+	if (curdimension == NORMAL)
 	{
-		for (int x = 0; x < 32; x++)
+		wallpapertiles[0] = 4;
+		wallpapertiles[1] = 5;
+		wallpapertiles[2] = 20;
+		wallpapertiles[3] = 21;
+	}
+	else if (curdimension == FLUFFY)
+	{
+		wallpapertiles[0] = 8;
+		wallpapertiles[1] = 8;
+		wallpapertiles[2] = 8;
+		wallpapertiles[3] = 8;
+	}
+	else
+	{
+		wallpapertiles[0] = 6;
+		wallpapertiles[1] = 7;
+		wallpapertiles[2] = 22;
+		wallpapertiles[3] = 23;
+	}
+	
+	//Wallpaper
+	for (int y = 0; y < 64; y += 2)
+	{
+		for (int x = 0; x < 64; x += 2)
 		{
-			SetTile(24, x, y, 4);
+			// SetTileInCorrectScreenblock(x, y, wallpapertiles[0]);
+			// SetTileInCorrectScreenblock(x + 1, y, wallpapertiles[1]);
+			// SetTileInCorrectScreenblock(x, y + 1, wallpapertiles[2]);
+			// SetTileInCorrectScreenblock(x + 1, y + 1, wallpapertiles[3]);
+			SetTileInCorrectScreenblock(25, x, y, wallpapertiles[0]);
+			SetTileInCorrectScreenblock(25, x + 1, y, wallpapertiles[1]);
+			SetTileInCorrectScreenblock(25, x, y + 1, wallpapertiles[2]);
+			SetTileInCorrectScreenblock(25, x + 1, y + 1, wallpapertiles[3]);
 		}
 	}
 	
 	//Platforms
 	for (int i = 0; i < numofplatforms; i++)
 	{
-		for (int y = platform[i].Gety() / 8 ; y < platform[i].GetBottom() / 8; y++)
+		for (int y = platform[i].Gety() / 8; y < platform[i].GetBottom() / 8; y++)
 		{
 			for (int x = platform[i].Getx() / 8; x < platform[i].GetRight() / 8; x++)
 			{
-				if (x < 32)
-				{
-					if (y < 32)
-					{
-						SetTile(25, x, y, 103);
-					}
-					else
-					{
-						SetTile(27, x, y - 32, 103);
-					}
-				}
-				else
-				{
-					if (y < 32)
-					{
-						SetTile(26, x - 32, y, 103);
-					}
-					else
-					{
-						SetTile(28, x - 32, y - 32, 103);
-					}
-				}
+				SetTileInCorrectScreenblock(25, x, y, 103);
 			}
+		}
+	}
+	
+	//Switch
+	for (int y = doorswitch.pressureplate.Gety() / 8;
+		y < doorswitch.pressureplate.GetBottom() / 8; y++)
+	{
+		for (int x = doorswitch.pressureplate.Getx() / 8;
+			x < doorswitch.pressureplate.GetRight() / 8; x++)
+		{
+			SetTile(28, x - 32, y - 32, 3);
+		}
+	}
+}
+
+/**
+Sets a tile tilenumber at position (x, y) in the correct screenblock.
+*/
+void Level::SetTileInCorrectScreenblock(int startingscreenblock, int x, int y, int tilenumber)
+{
+	if (x < 32)
+	{
+		if (y < 32)
+		{
+			SetTile(startingscreenblock, x, y, tilenumber);
+		}
+		else
+		{
+			SetTile(startingscreenblock + 2, x, y - 32, tilenumber);
+		}
+	}
+	else
+	{
+		if (y < 32)
+		{
+			SetTile(startingscreenblock + 1, x - 32, y, tilenumber);
+		}
+		else
+		{
+			SetTile(startingscreenblock + 3, x - 32, y - 32, tilenumber);
 		}
 	}
 }
@@ -201,9 +273,7 @@ void Level::UpdateLevelObjects()
 	ApplyEntityOffsets();
 	
 	REG_BG2HOFS = backgroundoffsetx;
-	REG_BG3HOFS = backgroundoffsetx / 2;	
 	REG_BG2VOFS = backgroundoffsety;
-	REG_BG3VOFS = backgroundoffsety / 2;
 	
 	uint16_t facing = 0;
 	
@@ -235,15 +305,18 @@ void Level::UpdateLevelObjects()
 		SetObject(cube[i].GetObjNum(),
 		  ATTR0_SHAPE(0) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(cube[i].drawy),
 		  ATTR1_SIZE(0) | ATTR1_X(cube[i].drawx),
-		  ATTR2_ID8(0) | ATTR2_PRIO(2));
+		  ATTR2_ID8(3) | ATTR2_PRIO(2));
 	}
+	
+	UpdateObjects();
 }
 
 /**
-Calculate the offsets of screen based on where the player is in the level
+Calculate the offsets of screen based on where the player is in the level and what it's holding
 */
 void Level::DetermineBackgroundOffsets()
 {
+	//Background x offset
 	if (player.Getx() < SCREEN_WIDTH / 2)
 	{
 		backgroundoffsetx = 0;
@@ -254,20 +327,27 @@ void Level::DetermineBackgroundOffsets()
 	}
 	else
 	{
-		backgroundoffsetx = -((SCREEN_WIDTH / 2) - player.Getx());
+		backgroundoffsetx = -((SCREEN_WIDTH / 2) - player.Getx());	
 	}
 	
-	if (player.Gety() < SCREEN_HEIGHT / 2)
+	//Background y offset
+	int holdingcubeoffset = 0;		//Offset compensating for player height change when holding item
+	if (player.isholding)
+	{
+		holdingcubeoffset = cube[player.cubeheld].GetHeight();
+	}
+	
+	if (player.Gety() + holdingcubeoffset < SCREEN_HEIGHT / 2)
 	{
 		backgroundoffsety = 0;
 	}
-	else if (player.Gety() > height - (SCREEN_HEIGHT / 2))
+	else if (player.Gety() + holdingcubeoffset > height - (SCREEN_HEIGHT / 2))
 	{
 		backgroundoffsety = height - SCREEN_HEIGHT;	
 	}
 	else
 	{
-		backgroundoffsety = -((SCREEN_HEIGHT / 2) - player.Gety());
+		backgroundoffsety = -((SCREEN_HEIGHT / 2) - player.Gety()) + holdingcubeoffset;
 	}
 }
 
@@ -277,47 +357,24 @@ Determines the offsets that keep the player in the middle of the screen
 void Level::ApplyEntityOffsets()
 {
 	//Player offsets
-	if (player.Getx() <= SCREEN_WIDTH / 2)
-	{
-		player.drawx = player.Getx();
-	}
-	else if ((player.Getx() > SCREEN_WIDTH / 2) && (player.Getx() < width - SCREEN_WIDTH / 2))
-	{
-		player.drawx = SCREEN_WIDTH / 2;
-	}
-	else
-	{
-		player.drawx = player.Getx() - width + SCREEN_WIDTH;
-	}
+	player.drawx = player.Getx() - backgroundoffsetx;	
+	player.drawy = player.Gety() - backgroundoffsety;
 	
-	if (player.Gety() <= SCREEN_HEIGHT / 2)
-	{
-		player.drawy = player.Gety();
-	}
-	else if ((player.Gety() > SCREEN_HEIGHT / 2) && (player.Gety() < height - SCREEN_HEIGHT / 2))
-	{
-		player.drawy = SCREEN_HEIGHT / 2;
-	}
-	else
-	{
-		player.drawy = player.Gety() - height + SCREEN_HEIGHT;
-	}
-
 	//Cube offsets
 	for (int i = 0; i < numofcubes; i++)
 	{
-		cube[i].SetScreenPosition(backgroundoffsetx, backgroundoffsety);
+		cube[i].SetScreenPosition(*this);
 	}
 }
 
 /**
 Fills screenblock with a single tile.
 */
-void Level::FillScreenblock(int screenblock, int screenblocksize, int tile)
+void Level::FillScreenblock(int screenblock, int tile)
 {
-	for (int y = 0; y < screenblocksize; y++)
+	for (int y = 0; y < 32; y++)
 	{
-		for (int x = 0; x < screenblocksize; x++)
+		for (int x = 0; x < 32; x++)
 		{
 			SetTile(screenblock, x, y, tile);
 		}

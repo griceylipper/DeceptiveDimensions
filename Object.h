@@ -10,8 +10,8 @@ class Object
 {	
 	protected:
 		//Data
-		int x;			//Position of left edge
-		int y;			//Position of top edge
+		int x;			//Position of left edge in level
+		int y;			//Position of top edge in level
 		int width;		//Width of object in pixels
 		int height;		//Height of object in pixels
 		
@@ -19,8 +19,7 @@ class Object
 		void Reset();
 		bool IsTouching(Object);
 		bool IsColliding(Object);
-		bool IsAbove(Object);
-				
+		
 	public:
 		//Methods
 		Object();
@@ -33,6 +32,7 @@ class Object
 		int GetHeight();
 		int GetRight();
 		int GetBottom();
+		bool IsAbove(Object);
 };
 
 #endif

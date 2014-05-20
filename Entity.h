@@ -23,7 +23,7 @@ class Entity : public Object
 		void StepAxis(int &, int &, const Level &);
 		void ApplyGravity();
 		int PlusOrMinus(int);
-		int GetScreenAxis(int &, int &, const int, int &, const int);
+		int GetScreenAxis(int &, int &, const int, int &, int, const int);
 		
 	protected:
 		//Data
@@ -58,7 +58,7 @@ class Entity : public Object
 		void Reset(int, int, int, int, int, int, int, bool, int);
 		bool IsCollidingLevel(const Level &);
 		void GetThrown(const Character &);
-		void SetScreenPosition(int &, int &);
+		void SetScreenPosition(Level &);
 		
 };
 

@@ -57,7 +57,7 @@ void Character::ReadButtons(Buttons &buttons, Level &level)
 	//Jumping
 	if (buttons.AJustPressed())
 	{
-		Jump(level);
+		TryJumping(level);
 	}
 	
 	//Picking up / dropping things
@@ -120,7 +120,6 @@ void Character::PickUp(Level &level)
 			else
 			{
 				level.cube[i].Move(cubeprevx, cubeprevy);
-				break;
 			}
 		}
 	}
@@ -211,7 +210,7 @@ void Character::Movement(Buttons &buttons)
 /**
 Makes character jump in direction opposite to gravity.
 */
-void Character::Jump(Level &level)
+void Character::TryJumping(Level &level)
 {
 	onplatform = false;
 	for (int i = 0; i < level.numofplatforms; i++)
@@ -240,6 +239,7 @@ void Character::Jump(Level &level)
 		}
 	}
 	
+	//Jump
 	if (onplatform)
 	{
 		yVel = -41;

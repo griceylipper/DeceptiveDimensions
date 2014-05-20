@@ -8,7 +8,7 @@
 
 /**
 Encapsulates the state of current and previous buttons, and provides functions for updating the 
-state variables, and for checking whether any button is being held or was just pressed.
+state variables, and for checking whether any button is being held or is just pressed.
 */
 struct Buttons
 {

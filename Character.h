@@ -41,7 +41,7 @@ class Character : public Entity
 		Character(int, int, int, int, int, int, int, bool, int, int, int);
 		void Reset(int, int, int, int, int, int, int, bool, int, int, int);
 		void ReadButtons(Buttons &, Level &);
-		void Jump(Level &);
+		void TryJumping(Level &);
 		void CheckOnScreen();
 		void Spawn();
 };

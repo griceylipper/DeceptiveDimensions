@@ -8,22 +8,21 @@
 #include "Entity.h"
 #include "Character.h"
 #include "Buttons.h"
+#include "DoorSwitch.h"
 
 class Level : public Object		//x and y coordinates in object refer to offset so that the level is
 								//displayed correctly
 {
 	private:
 		//Data
-		int backgroundoffsetx;
-		int backgroundoffsety;
 		bool paused;
 		bool indimensionsmenu;
 		
 		//Methods
 		void DimensionMenuControl(Buttons &);
-		void FillScreenblock(int, int, int);
 		void ApplyEntityOffsets();
 		void DetermineBackgroundOffsets();
+		void SetTileInCorrectScreenblock(int, int, int, int);
 		
 	public:
 		//Data
@@ -31,8 +30,11 @@ class Level : public Object		//x and y coordinates in object refer to offset so 
 		Object platform[MAXPLATFORMS];
 		Entity cube[MAXCUBES];
 		Character player;
+		DoorSwitch doorswitch;
 		int numofplatforms;
 		int numofcubes;
+		int backgroundoffsetx;
+		int backgroundoffsety;		
 		enum dimension {NORMAL, FLUFFY, HEAVY, SLOWMOTION, ANTIGRAVITY};
 		dimension curdimension;
 		dimension prevdimension;
@@ -43,6 +45,7 @@ class Level : public Object		//x and y coordinates in object refer to offset so 
 		void DrawBackground(dimension);
 		void MoveObjects(Buttons &);
 		void UpdateLevelObjects();
+		void FillScreenblock(int, int);
 };
 
 #endif

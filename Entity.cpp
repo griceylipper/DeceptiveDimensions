@@ -232,37 +232,37 @@ void Entity::GetThrown(const Character &player)
 /**
 Determines the x and y positions of an entity relative to the screen
 */
-void Entity::SetScreenPosition(int &backgroundoffsetx, int &backgroundoffsety)
+void Entity::SetScreenPosition(Level &level)
 {
-	drawx = GetScreenAxis(x, width, 512, backgroundoffsetx, SCREEN_WIDTH);
-	drawy = GetScreenAxis(y, height, 256, backgroundoffsety, SCREEN_HEIGHT);
+	drawx = GetScreenAxis(x, width, 512, level.backgroundoffsetx, level.GetWidth(), SCREEN_WIDTH);
+	drawy = GetScreenAxis(y, height, 256, level.backgroundoffsety, level.GetHeight(), SCREEN_HEIGHT);
 }
 
 /**
 Sets the position along an axis of an entity relative to the screen's position
 */
-int Entity::GetScreenAxis(int &axis, int &dimensioninaxis, const int OBJECT_OFFSET, 
-							int &backgroundoffsetaxis, const int SCREEN_DIMENSION)
+int Entity::GetScreenAxis(int &axis, int &dimensioninaxis, const int OBJECT_OFFSET,
+							int &backgroundoffsetaxis, int levelsize, const int SCREEN_DIMENSION)
 {
 	int newposition;
-	bool onawkwardedgeofscreen = false;
 	
 	//If position of entity is partially off screen in -ve direction
-	if (axis - backgroundoffsetaxis < dimensioninaxis)
+	if (axis + dimensioninaxis <= backgroundoffsetaxis)
+	{
+		newposition = SCREEN_DIMENSION;
+	}
+	else if (axis < backgroundoffsetaxis)
 	{
 		newposition = axis - backgroundoffsetaxis + OBJECT_OFFSET;
-		onawkwardedgeofscreen = true;
+	}
+	else if (axis > backgroundoffsetaxis + SCREEN_DIMENSION)
+	{
+		newposition = SCREEN_DIMENSION;
 	}
 	else
 	{
 		newposition = axis - backgroundoffsetaxis;
 	}
-	
-	if ((newposition > SCREEN_DIMENSION) && !onawkwardedgeofscreen)
-	{
-		newposition = SCREEN_DIMENSION;		//Gets rid of glitchy squares appearing on screen
-	}
-
 	return newposition;
 }
 

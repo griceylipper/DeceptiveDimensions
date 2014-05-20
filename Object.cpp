@@ -100,6 +100,15 @@ bool Object::IsAbove(Object obstacle)
 	return false;
 }
 
+// /**
+// Returns true if this object is touching bottom side of an Object obstacle
+// */
+// bool Object::IsBelow(Object obstacle)
+// {
+	// if (obstacle.GetRight() > Getx()
+		// && obstacle.Getx() < GetRight()
+// }
+
 /**
 Moves object to coordinates (a, b)
 */
