@@ -26,6 +26,7 @@ class Level : public Object		//x and y coordinates in object refer to offset so 
 		void DrawDoor();
 		void DrawDimensionsMenu();
 		void DrawDimensionsCursor();
+		void ApplyAntigravity();
 		
 	public:
 		//Data
@@ -37,18 +38,19 @@ class Level : public Object		//x and y coordinates in object refer to offset so 
 		int numofplatforms;
 		int numofcubes;
 		int backgroundoffsetx;
-		int backgroundoffsety;		
+		int backgroundoffsety;
 		enum dimension {NORMAL, FLUFFY, HEAVY, SLOWMOTION, ANTIGRAVITY};
 		dimension curdimension;
 		dimension prevdimension;
 		
 		//Methods
 		Level();
+		void TakeInput(Buttons &buttons);
 		void Draw();
 		void DrawBackground(dimension);
-		void MoveObjects(Buttons &);
+		void MoveObjects();
 		void UpdateLevelObjects();
-		void FillScreenblock(int, int);	
+		void FillScreenblock(int, int);			
 		int DimensionTileOffset(dimension);
 };
 

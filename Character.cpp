@@ -101,12 +101,12 @@ void Character::PickUp(Level &level)
 {
 	for (int i = 0; i < level.numofcubes; i++)
 	{
-		if (IsTouching(level.cube[i]))
+		if (IsTouching(level.cube[i]) && level.curdimension != HEAVY)
 		{
 			int cubeprevx = level.cube[i].Getx();
 			int cubeprevy = level.cube[i].Gety();
 			level.cube[i].Move(x, y - level.cube[i].GetHeight());
-			if (level.cube[i].IsCollidingLevel(level) == false)
+			if (!level.cube[i].IsCollidingLevel(level))
 			{
 				isholding = true;
 				cubeheld = i;
@@ -244,6 +244,45 @@ void Character::TryJumping(Level &level)
 	{
 		yVel = -40;
 	}
+}
+
+/**
+Returns true if character is standing on a cube.
+*/
+void Character::CheckIfOnMovingPlatform(Level &level)
+{
+	isoncube = false;
+	for (int i = 0; i < level.numofcubes; i++)
+	{
+		//Avoid checking if it is above a cube it is holding
+		//(Without guard player is "above" cube because of height changes made to character)
+		if (i == cubeheld)
+		{
+			continue;
+		}
+		if (IsAbove(level.cube[i]))
+		{
+			isoncube = true;
+			oncubenum = i;
+			oncubex = level.cube[i].Getx();
+			oncubey = level.cube[i].Gety();
+			break;
+		}
+	}
+}
+
+/**
+Moves player by amount that moving platform moves.
+*/
+void Character::MoveWithCube(Entity &movingplatform)
+{
+	//Calculate how far platform has moved after stepping
+	int deltax = movingplatform.Getx() - oncubex;
+	int deltay = movingplatform.Gety() - oncubey;
+	
+	//Move player by that amount
+	x += deltax;
+	y += deltay;
 }
 
 /**

@@ -7,7 +7,7 @@ DECEPTIVE DIMENSIONS
 		Roy Mullay 2014
 	
 *** REFERENCES ***
-http://www.gamedev.net/page/resources/_/technical/game-programming/the-guide-to-implementing-2d-platformers-r2936
+http://higherorderfun.com/blog/2012/05/20/the-guide-to-implementing-2d-platformers/
 http://www.coranac.com/tonc/text/fixed.htm
 http://www.gameprogrammingpatterns.com/
 ******************
@@ -30,12 +30,6 @@ Clean-up:
 New features:
 
 -Get player animation working
--Redraw player sprite
-	-Give player outline so it is clearer against background.
--Add more background graphics.
-	-Maybe ask whether Kirsteen can provide graphics
--Implement scrolling backgrounds
-	-Make player stay in middle of screen when moving around level.
 -Implement physics for moving platforms.
 -Implement dimensions
 
@@ -48,8 +42,6 @@ New features:
 
 */
 
-#include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
 #include "gba.h"
 #include "font.h"
@@ -104,30 +96,46 @@ int main()
 	// 8bpp tiles 0-255 are in CB 4, tiles 256-511 in CB 5.)
 	
 	//Custom spritesheet loading
-	// LoadPaletteBGData(0, TitleScreenPal, sizeof TitleScreenPal);
-	// LoadTileData(0, 0, TitleScreenTiles, sizeof TitleScreenTiles);
+	LoadPaletteBGData(0, TitleScreenPal, sizeof TitleScreenPal);
+	LoadTileData(0, 0, TitleScreenTiles, sizeof TitleScreenTiles);
 	
 	ClearObjects();
 	
+	//Clear all screenblocks
+	for (int screenblock = 24; screenblock < 31; screenblock++)
+	{
+		for (int y = 0; y < 32; y++)
+		{
+			for (int x = 0; x < 32; x++)
+			{
+				SetTile(screenblock, x, y, 344);
+			}
+		}	
+	}
+	
+	for (int y = 0; y < (SCREEN_HEIGHT / 8); y++)
+	{
+		for (int x = 0; x < (SCREEN_WIDTH / 8); x++)
+		{
+			SetTile(30, x, y, x + (y * (SCREEN_WIDTH / 8)));
+		}
+	}
+	
 	Buttons buttons;
-	int frameCounter = 0;
 	
-	// for (int y = 0; y < (SCREEN_HEIGHT / 8); y++)
-	// {
-		// for (int x = 0; x < (SCREEN_WIDTH / 8); x++)
-		// {
-			// SetTile(25, x, y, x + (y * (SCREEN_WIDTH / 8)));
-		// }
-	// }
-	
-	// //Title screen (under construction)
-	// while (true)
-	// {
-		// if (buttons.StartJustPressed())
-		// {
-			// break;
-		// }
-	// }
+	//Title screen (under construction)
+	while (true)
+	{
+		buttons.Update();
+		
+		if (buttons.StartJustPressed())
+		{
+			break;
+		}
+		
+		WaitVSync();
+		
+	}
 	
 	LoadPaletteObjData(0, spritesheet4Pal, sizeof spritesheet4Pal);
 	LoadPaletteBGData(0, backgroundnewnewPal, sizeof backgroundnewnewPal);
@@ -143,12 +151,15 @@ int main()
 	
 	level1.DrawBackground(level1.curdimension);
 	
+	int frameCounter = 0;
+	
 	//Main game loop
 	while (true)
 	{
 		buttons.Update();
 		
-		level1.MoveObjects(buttons);
+		level1.TakeInput(buttons);
+		level1.MoveObjects();
 		level1.Draw();
 		level1.UpdateLevelObjects();
 

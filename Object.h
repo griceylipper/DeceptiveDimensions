@@ -33,6 +33,7 @@ class Object
 		int GetRight();
 		int GetBottom();
 		bool IsAbove(Object);
+		bool IsBelow(Object);
 };
 
 #endif

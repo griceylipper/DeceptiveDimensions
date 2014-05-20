@@ -89,6 +89,41 @@ bool Entity::IsCollidingLevel(const Level &level)
 }
 
 /**
+Returns true if entity is touching any other object in Level level
+*/
+bool Entity::IsTouchingLevel(const Level &level)
+{
+	for (int i = 0; i < level.numofplatforms; i++)
+	{
+		if (IsTouching(level.platform[i]))
+		{
+			return true;
+		}
+	}
+	
+	if (objnum != 0)	//Guard against doing collision detection between player object and itself
+	{
+		if (IsTouching(level.player))
+		{
+			return true;
+		}
+	}
+	
+	for (int i = 0; i < level.numofcubes; i++)
+	{
+		if ((objnum != i + 1) && i != level.player.cubeheld)	//Same object guard for cubes
+		{
+			if (IsTouching(level.cube[i]))
+			{
+				return true;
+			}
+		}
+	}
+	
+	return false;
+}
+
+/**
 Applies resistance to entities in the x-axis
 */
 void Entity::ApplyResistance()
@@ -126,7 +161,11 @@ void Entity::ApplyVelocity(Level &level)
 	{
 		if (objnum != 0)
 		{
-			ApplyResistance();
+			if (level.curdimension != FLUFFY || IsTouchingLevel(level))
+			{
+				ApplyResistance();
+			}
+			
 		}
 		ApplyGravity();
 		ApplyTerminal();
@@ -142,8 +181,14 @@ void Entity::StepAxis(int &axis, int &axisVel, const Level &level)
 {
 	//Using bit shift operations instead of division fixes continuity problems when axisVel is 
 	//around zero. Adding four offsets the way numbers are always bit shifted towards -ve infinity.
-	axis += ((axisVel + 4) >> 3);
-	//axis += ((axisVel + 16) >> 5);
+	if ((level.curdimension != SLOWMOTION) || (objnum == 0))
+	{
+		axis += ((axisVel + 4) >> 3);
+	}
+	else
+	{
+		axis += ((axisVel + 16) >> 5);
+	}
 	
 	for (int i = 0; i < level.numofplatforms; i++)
 	{

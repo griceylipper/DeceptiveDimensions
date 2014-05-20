@@ -44,15 +44,15 @@ Level::Level()
 	
 	//Door/Switch placement
 	doorswitch.door.Reset(width - 40, height - 48, 16, 32);
-	doorswitch.pressureplate.Reset(width - 64, height - 16, 16, 8);
+	doorswitch.pressureplate.Reset(width - 80, height - 16, 16, 8);
 }
 
 /**
-Steps all entities in level
+Deals with dimensions menu control and pause
 */
-void Level::MoveObjects(Buttons &buttons)
+void Level::TakeInput(Buttons &buttons)
 {
-	if (buttons.LIsHeld() && !paused)
+	if (buttons.LIsHeld() && !paused && !player.isholding)
 	{
 		indimensionsmenu = true;
 	}
@@ -66,22 +66,71 @@ void Level::MoveObjects(Buttons &buttons)
 		paused = !paused;
 	}	
 	
-	if (!paused && !indimensionsmenu)
-	{
-		player.ReadButtons(buttons, *this);
-		player.ApplyVelocity(*this);
-		
-		for (int i = 0; i < numofcubes; i++)
-		{
-			cube[i].ApplyVelocity(*this);
-		}
-	}
+	player.ReadButtons(buttons, *this);
 	
 	doorswitch.CheckPressurePlate(*this);
 	
 	if (indimensionsmenu)
 	{
 		DimensionMenuControl(buttons);
+	}
+}
+
+/**
+Steps all entities in level
+*/
+void Level::MoveObjects()
+{
+	if (!paused && !indimensionsmenu)
+	{
+		player.CheckIfOnMovingPlatform(*this);
+		
+		if (curdimension == ANTIGRAVITY && player.isoncube)
+		{
+			player.ReverseGravity();
+			player.ApplyVelocity(*this);
+			player.ReverseGravity();
+		}
+		
+		//Step all cubes with exceptions
+		for (int i = 0; i < numofcubes; i++)
+		{
+			if ((player.isholding && i == player.cubeheld)
+				|| (curdimension == ANTIGRAVITY && i == player.oncubenum))
+			{
+				continue;
+			}
+			cube[i].ApplyVelocity(*this);
+		}
+		
+		//Move player by amount which cube it is standing on has moved
+		if (curdimension != ANTIGRAVITY) 
+		{
+			if (player.isoncube)
+			{
+				player.MoveWithCube(cube[player.oncubenum]);
+			}
+			//Step player as normal
+			player.ApplyVelocity(*this);
+		}
+		else
+		{
+			if (!player.isoncube)
+			{
+				cube[player.oncubenum].ApplyVelocity(*this);
+				player.ApplyVelocity(*this);
+			}
+			else
+			{
+				cube[player.oncubenum].Move(cube[player.oncubenum].Getx(), player.GetBottom());
+			}
+		}
+
+		//Move cube being held by player
+		if (player.isholding)
+		{
+			cube[player.cubeheld].ApplyVelocity(*this);
+		}
 	}
 }
 
@@ -123,6 +172,7 @@ void Level::DimensionMenuControl(Buttons &buttons)
 		else if (curdimension == ANTIGRAVITY)
 		{
 			curdimension = NORMAL;
+			ApplyAntigravity();
 		}
 	}
 	else if (buttons.RightJustPressed())
@@ -130,11 +180,23 @@ void Level::DimensionMenuControl(Buttons &buttons)
 		if (curdimension == NORMAL)
 		{
 			curdimension = ANTIGRAVITY;
+			ApplyAntigravity();
 		}
 		else if (curdimension == SLOWMOTION)
 		{
 			curdimension = NORMAL;
 		}
+	}
+}
+
+/**
+Applies antigrivity on all cubes in level
+*/
+void Level::ApplyAntigravity()
+{
+	for (int i = 0; i < numofcubes; i++)
+	{
+		cube[i].ReverseGravity();
 	}
 }
 

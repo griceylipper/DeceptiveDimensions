@@ -19,7 +19,7 @@ void DoorSwitch::CheckPressurePlate(Level &level)
 {
 	doorprevopen = doorcuropen;
 	doorcuropen = false;
-	if (pressureplate.IsAbove(level.player))
+	if (pressureplate.IsBelow(level.player))
 	{
 		doorcuropen = true;
 	}
@@ -28,7 +28,7 @@ void DoorSwitch::CheckPressurePlate(Level &level)
 	{
 		for (int i = 0; i < level.numofcubes; i++)
 		{
-			if (pressureplate.IsAbove(level.cube[i]))
+			if (pressureplate.IsBelow(level.cube[i]))
 			{
 				doorcuropen = true;
 				break;

@@ -24,6 +24,7 @@ class Entity : public Object
 		void ApplyGravity();
 		int PlusOrMinus(int);
 		int GetScreenAxis(int &, int &, const int, int &, int, const int);
+		bool IsTouchingLevel(const Level &level);
 		
 	protected:
 		//Data
@@ -48,6 +49,7 @@ class Entity : public Object
 		int drawx;
 		int drawy;
 		bool isheld;		//Whether or not the Entity is being held by a Character
+		enum dimension {NORMAL, FLUFFY, HEAVY, SLOWMOTION, ANTIGRAVITY};
 		
 		//Methods
 		Entity();
