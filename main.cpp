@@ -53,9 +53,8 @@ New features:
 #include <string.h>
 #include "gba.h"
 #include "font.h"
-#include "spritesheet3.h"
+#include "spritesheet4.h"
 #include "TitleScreen.h"
-//#include "spritesheet2.h"
 #include "backgroundnewnew.h"
 #include "Object.h"
 #include "Entity.h"
@@ -130,9 +129,9 @@ int main()
 		// }
 	// }
 	
-	LoadPaletteObjData(0, spritesheet3Pal, sizeof spritesheet3Pal);
+	LoadPaletteObjData(0, spritesheet4Pal, sizeof spritesheet4Pal);
 	LoadPaletteBGData(0, backgroundnewnewPal, sizeof backgroundnewnewPal);
-	LoadTileData(4, 0, spritesheet3Tiles, sizeof spritesheet3Tiles);
+	LoadTileData(4, 0, spritesheet4Tiles, sizeof spritesheet4Tiles);
 	LoadTileData(0, 0, backgroundnewnewTiles, sizeof backgroundnewnewTiles);
 	
 	Level level1;

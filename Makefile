@@ -29,7 +29,7 @@ OBJECTS = \
 	DoorSwitch.o \
 	Buttons.o \
 	TitleScreen.o \
-	spritesheet3.o \
+	spritesheet4.o \
 	backgroundnewnew.o
 
 # The default target to make if none is specified.

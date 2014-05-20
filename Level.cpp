@@ -23,24 +23,24 @@ Level::Level()
 	platform[2].Reset(0, height - 16, width, 16);
 	platform[3].Reset(width - 16, 0, 16, height);
 	//The rest of the platforms
-	platform[4].Reset(48, 256, width - 48, 16);
+	platform[4].Reset(64, 256, width - 64, 16);
 	platform[5].Reset(16, 304, 16, 16);
 	platform[6].Reset(32, 344, 16, 16);
-	platform[7].Reset(48, 384, width - 48, 16);
+	platform[7].Reset(64, 384, width - 64, 16);
 	platform[8].Reset(16, 432, 16, 16);
 	platform[9].Reset(32, 472, 16, 16);
-	platform[10].Reset(48, 128, width - 48, 16);
+	platform[10].Reset(64, 128, width - 64, 16);
 	platform[11].Reset(16, 176, 16, 16);
 	platform[12].Reset(32, 216, 16, 16);
 	
 	//Player
-	player.Reset(116, 76, 8, 16, 0, 0, 4, 1, 0, 16, 16);
+	player.Reset(116, 76, 16, 32, 0, 0, 4, 1, 0, 16, 16);
 	
 	//Test cubes
-	cube[0].Reset(16, 64, 8, 8, 0, 0, 4, true, 1);
-	cube[1].Reset(24, 72, 8, 8, 0, 0, 4, true, 2);
-	cube[2].Reset(32, 80, 8, 8, 0, 0, 4, true, 3);
-	cube[3].Reset(40, 88, 8, 8, 0, 0, 4, true, 4);
+	cube[0].Reset(16, 64, 16, 16, 0, 0, 4, true, 1);
+	cube[1].Reset(24, 72, 16, 16, 0, 0, 4, true, 2);
+	cube[2].Reset(32, 80, 16, 16, 0, 0, 4, true, 3);
+	cube[3].Reset(40, 88, 16, 16, 0, 0, 4, true, 4);
 	
 	//Door/Switch placement
 	doorswitch.door.Reset(width - 40, height - 48, 16, 32);
@@ -415,20 +415,22 @@ void Level::UpdateLevelObjects()
 		facing = ATTR1_HFLIP;
 	}
 	
+	int cubetile = 6 + DimensionTileOffset(curdimension);
+	
 	if (player.isholding)
 	{
 		//Allows for height change when carrying cubes on the head
 		SetObject(player.GetObjNum(),
 		  ATTR0_SHAPE(2) | ATTR0_8BPP | ATTR0_REG
 		    | ATTR0_Y(player.drawy + cube[player.cubeheld].GetHeight()),	
-		  ATTR1_SIZE(0) | ATTR1_X(player.drawx) | facing,
+		  ATTR1_SIZE(2) | ATTR1_X(player.drawx) | facing,
 		  ATTR2_ID8(0) | ATTR2_PRIO(2));
 	}
 	else
 	{
 		SetObject(player.GetObjNum(),
 		  ATTR0_SHAPE(2) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(player.drawy),
-		  ATTR1_SIZE(0) | ATTR1_X(player.drawx) | facing,
+		  ATTR1_SIZE(2) | ATTR1_X(player.drawx) | facing,
 		  ATTR2_ID8(0) | ATTR2_PRIO(2));
 	}
 	
@@ -437,11 +439,38 @@ void Level::UpdateLevelObjects()
 	{
 		SetObject(cube[i].GetObjNum(),
 		  ATTR0_SHAPE(0) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(cube[i].drawy),
-		  ATTR1_SIZE(0) | ATTR1_X(cube[i].drawx),
-		  ATTR2_ID8(3) | ATTR2_PRIO(2));
+		  ATTR1_SIZE(1) | ATTR1_X(cube[i].drawx),
+		  ATTR2_ID8(cubetile) | ATTR2_PRIO(2));
 	}
 	
 	UpdateObjects();
+}
+
+/**
+Returns the value the 
+*/
+int Level::DimensionTileOffset(dimension curdimension)
+{
+	int dimensiontileoffset = 0;
+	
+	if (curdimension == FLUFFY)
+	{
+		dimensiontileoffset = 2;
+	}
+	else if (curdimension == HEAVY)
+	{
+		dimensiontileoffset = 4;
+	}
+	else if (curdimension == SLOWMOTION)
+	{
+		dimensiontileoffset = 6;
+	}
+	else if (curdimension == ANTIGRAVITY)
+	{
+		dimensiontileoffset = 8;
+	}	
+	
+	return dimensiontileoffset;
 }
 
 /**

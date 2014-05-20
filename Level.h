@@ -48,7 +48,8 @@ class Level : public Object		//x and y coordinates in object refer to offset so 
 		void DrawBackground(dimension);
 		void MoveObjects(Buttons &);
 		void UpdateLevelObjects();
-		void FillScreenblock(int, int);
+		void FillScreenblock(int, int);	
+		int DimensionTileOffset(dimension);
 };
 
 #endif
