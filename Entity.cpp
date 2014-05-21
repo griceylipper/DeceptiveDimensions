@@ -12,8 +12,8 @@ Entity::Entity()
 {
 	x = 0;
 	y = 0;
-	width = 8;
-	height = 8;
+	width = 16;
+	height = 16;
 	xVel = 0;
 	yVel = 0;
 	gravity = 10;
@@ -25,13 +25,13 @@ Entity::Entity()
 	decel = 1;
 }               
 
-/**
-Constructor which allows setting of all eight data values
-*/
-Entity::Entity(int a, int b, int w, int h, int xV, int yV, int g, bool H, int o)
-{               
-	Reset(a, b, w, h, xV, yV, g, H, o);
-}               
+// /**
+// Constructor which allows setting of all eight data values
+// */
+// Entity::Entity(int a, int b, int w, int h, int xV, int yV, int g, bool H, int o)
+// {               
+	// Reset(a, b, w, h, xV, yV, g, H, o);
+// }               
 
 /**
 Reset for all eight data values
@@ -161,11 +161,13 @@ void Entity::ApplyVelocity(Level &level)
 	{
 		if (objnum != 0)
 		{
-			if (level.curdimension != FLUFFY || IsTouchingLevel(level))
+			if (level.curdimension == NORMAL
+				|| level.curdimension == HEAVY
+				|| level.curdimension == ANTIGRAVITY
+				|| IsTouchingLevel(level))
 			{
 				ApplyResistance();
 			}
-			
 		}
 		ApplyGravity();
 		ApplyTerminal();
@@ -344,4 +346,16 @@ int Entity::PlusOrMinus(int x)
 	{
 		return 0;
 	}
+}
+
+/**
+Returns true if the entity is moving
+*/
+bool Entity::IsMoving()
+{
+	if (xVel > 4 || xVel < -4)
+	{
+		return true;
+	}
+	return false;
 }

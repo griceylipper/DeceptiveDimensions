@@ -61,6 +61,7 @@ class Entity : public Object
 		bool IsCollidingLevel(const Level &);
 		void GetThrown(const Character &);
 		void SetScreenPosition(Level &);
+		bool IsMoving();
 		
 };
 

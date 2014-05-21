@@ -29,9 +29,6 @@ Clean-up:
 
 New features:
 
--Get player animation working
--Implement physics for moving platforms.
--Implement dimensions
 
 *******************
 
@@ -56,21 +53,7 @@ New features:
 #include "DoorSwitch.h"
 
 //Function prototypes
-int Increment(int);
 void DrawText(int, int, const char[]);
-
-// A blank tile.
-// See the palette below for what the colour numbers mean.
-// const uint8_t blank_tile[64] = {
-	// 0, 0, 0, 0, 0, 0, 0, 0,
-	// 0, 0, 0, 0, 0, 0, 0, 0,
-	// 0, 0, 0, 0, 0, 0, 0, 0,
-	// 0, 0, 0, 0, 0, 0, 0, 0,
-	// 0, 0, 0, 0, 0, 0, 0, 0,
-	// 0, 0, 0, 0, 0, 0, 0, 0,
-	// 0, 0, 0, 0, 0, 0, 0, 0,
-	// 0, 0, 0, 0, 0, 0, 0, 0,
-// };
 
 int main()
 {
@@ -88,40 +71,21 @@ int main()
 	REG_BG2HOFS = 0;
 	REG_BG2VOFS = 0;
 	
-	REG_BG3CNT = BG_CBB(0) | BG_SBB(24) | BG_8BPP | BG_REG_32x32 | BG_PRIO(3);
-	REG_BG3HOFS = 0;
-	REG_BG3VOFS = 0;
-
-	// (Charblocks 4 and 5 are for object tiles;
-	// 8bpp tiles 0-255 are in CB 4, tiles 256-511 in CB 5.)
-	
-	//Custom spritesheet loading
-	LoadPaletteBGData(0, TitleScreenPal, sizeof TitleScreenPal);
-	LoadTileData(0, 0, TitleScreenTiles, sizeof TitleScreenTiles);
-	
 	ClearObjects();
 	
-	//Clear all screenblocks
-	for (int screenblock = 24; screenblock < 31; screenblock++)
+	SetPaletteBG(1, RGB(31, 31, 31)); // white
+	
+	//Load each tile in font_bold into it's corresponding position in charblock 0
+	for (int i = 0; i < 128; i++)
 	{
-		for (int y = 0; y < 32; y++)
-		{
-			for (int x = 0; x < 32; x++)
-			{
-				SetTile(screenblock, x, y, 344);
-			}
-		}	
+		LoadTile8(0, i, font_bold[i]);
 	}
 	
-	for (int y = 0; y < (SCREEN_HEIGHT / 8); y++)
-	{
-		for (int x = 0; x < (SCREEN_WIDTH / 8); x++)
-		{
-			SetTile(30, x, y, x + (y * (SCREEN_WIDTH / 8)));
-		}
-	}
+	DrawText(5, (SCREEN_HEIGHT / 16) - 2, "DECEPTIVE DIMENSIONS");
+	DrawText(5, (SCREEN_HEIGHT / 16), "Press start to begin");
 	
 	Buttons buttons;
+	int framecounter = 0;
 	
 	//Title screen (under construction)
 	while (true)
@@ -133,55 +97,101 @@ int main()
 			break;
 		}
 		
-		WaitVSync();
-		
+		WaitVSync();	
 	}
 	
-	LoadPaletteObjData(0, spritesheet4Pal, sizeof spritesheet4Pal);
-	LoadPaletteBGData(0, backgroundnewnewPal, sizeof backgroundnewnewPal);
-	LoadTileData(4, 0, spritesheet4Tiles, sizeof spritesheet4Tiles);
-	LoadTileData(0, 0, backgroundnewnewTiles, sizeof backgroundnewnewTiles);
-	
-	Level level1;
-	
-	for (int screenblock = 21; screenblock < 31; screenblock++)
-	{
-		level1.FillScreenblock(screenblock, 0);
-	}
-	
-	level1.DrawBackground(level1.curdimension);
-	
-	int frameCounter = 0;
-	
-	//Main game loop
 	while (true)
 	{
-		buttons.Update();
+		//Load Custom spritesheet
+		LoadPaletteObjData(0, spritesheet4Pal, sizeof spritesheet4Pal);
+		LoadPaletteBGData(0, backgroundnewnewPal, sizeof backgroundnewnewPal);
+		LoadTileData(4, 0, spritesheet4Tiles, sizeof spritesheet4Tiles);
+		LoadTileData(0, 0, backgroundnewnewTiles, sizeof backgroundnewnewTiles);
 		
-		level1.TakeInput(buttons);
-		level1.MoveObjects();
-		level1.Draw();
-		level1.UpdateLevelObjects();
+		int levelnumber = 1;
+		
+		Level level(levelnumber);
+		
+		for (int screenblock = 21; screenblock < 31; screenblock++)
+		{
+			level.FillScreenblock(screenblock, 0);
+		}
+		
+		level.DrawBackground(level.curdimension);
+		
+		bool gamerunning = true;
+		
+		//Main game loop
+		while (gamerunning)
+		{
+			buttons.Update();
+			
+			gamerunning = level.CheckIfLevelComplete();
+			level.TakeInput(buttons);
+			level.MoveObjects();
+			level.Draw();
+			level.UpdateLevelObjects(framecounter);
 
-		frameCounter = Increment(frameCounter);
+			framecounter++;
+			
+			WaitVSync();
+			FlipBuffers();
+		}
 		
-		WaitVSync();
-		FlipBuffers();
+		//Reload each tile in font_bold into it's corresponding position in charblock 0
+		for (int i = 0; i < 128; i++)
+		{
+			LoadTile8(0, i, font_bold[i]);
+		}
+		
+		SetPaletteBG(0, RGB(0, 0, 0)); // black
+		SetPaletteBG(1, RGB(31, 31, 31)); // white		
+		
+		for (int screenblock = 25; screenblock < 31; screenblock++)
+		{
+			for (int y = 0; y < 32; y++)
+			{
+				for (int x = 0; x < 32; x++)
+				{
+					SetTile(screenblock, x, y, 0);
+				}
+			}
+		}
+		
+		level.player.drawx = SCREEN_WIDTH;
+		
+		SetObject(level.player.GetObjNum(),
+		  ATTR0_SHAPE(2) | ATTR0_8BPP | ATTR0_HIDE,
+		  ATTR1_SIZE(2) | ATTR1_X(level.player.drawx),
+		  ATTR2_ID8(0) | ATTR2_PRIO(2));
+		
+		UpdateObjects();
+		
+		DrawText(6, (SCREEN_HEIGHT / 16) - 2, "That's all folks!!");
+		DrawText(3, (SCREEN_HEIGHT / 16), "Press start to try again");
+		
+		while (true)
+		{
+			buttons.Update();
+			
+			if (buttons.StartJustPressed())
+			{
+				break;
+			}
+			
+			WaitVSync();
+		}
 	}
-
-	return 0;
 }
 
-//Functions
 /**
-Increments counter by 1, and resets to 0 when counter == 60.
- */
-int Increment(int counter)
+Outputs string string to screen at position (x, y)
+*/
+void DrawText(int x, int y, const char string[])
 {
-	counter++;
-	if (counter % 60 == 0)
+	for (int i = 0; i < int(strlen(string)); i++)
 	{
-		counter = 0;
+		SetTile(30, x, y, string[i]);
+		x++;
 	}
-	return counter;
 }

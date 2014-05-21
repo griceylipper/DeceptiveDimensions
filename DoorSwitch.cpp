@@ -35,4 +35,8 @@ void DoorSwitch::CheckPressurePlate(Level &level)
 			}
 		}
 	}
+	if (level.curdimension == FLUFFY)
+	{
+		doorcuropen = false;
+	}
 }

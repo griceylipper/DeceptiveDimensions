@@ -8,7 +8,7 @@ Default constructor
 */
 Character::Character()
 {
-	Reset(116, 76, 8, 16, 0, 0, 4, true, 0, 16, 16);
+	Reset(116, 76, 16, 32, 0, 0, 4, true, 0, 16, 16);
 }
 /**
 Constructor which allows setting of all parameters at once.
@@ -70,6 +70,12 @@ void Character::ReadButtons(Buttons &buttons, Level &level)
 	if (buttons.RJustPressed())
 	{
 		ThrowCube(level);
+	}
+	
+	if (buttons.UpJustPressed() && IsColliding(level.doorswitch.door)
+		&& level.doorswitch.doorcuropen)
+	{
+		level.levelcomplete = true;
 	}
 }
 

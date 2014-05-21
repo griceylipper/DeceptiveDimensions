@@ -39,6 +39,7 @@ class Character : public Entity
 		int oncubey;			//y-position of cube currently stood on
 		enum {LEFT = true, RIGHT = false};
 		bool direction;			//Direction in which the player is facing
+		bool animationframe;	//Frame of animation character is in
 		
 		
 		//Methods

@@ -9,8 +9,8 @@ Object::Object()
 {
 	x = 0;
 	y = 0;
-	width = 8;
-	height = 8;
+	width = 16;
+	height = 16;
 }
 
 /**
