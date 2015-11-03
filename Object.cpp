@@ -2,28 +2,28 @@
 
 #include "Object.h"
 
-//Constructor
+/**
+Default constructor. Constructs an object at (0, 0) of width and height of 8 pixels
+*/
 Object::Object()
 {
-	Reset();
+	x = 0;
+	y = 0;
+	width = 16;
+	height = 16;
 }
 
-//Overloaded constructor
+/**
+Overloaded constructor. Constructs an object at (a, b) of width w and height h
+*/
 Object::Object(int a, int b, int w, int h)
 {
 	Reset(a, b, w, h);
 }
 
-//Default Object data values
-void Object::Reset()
-{
-	x = 0;
-	y = 0;
-	width = 8;
-	height = 8;
-}
-
-//Allows setting of all four fields with a single method
+/**
+Moves object to (a, b) and resizes it to width w and height h
+*/
 void Object::Reset(int a, int b, int w, int h)
 {
 	x = a;
@@ -32,104 +32,142 @@ void Object::Reset(int a, int b, int w, int h)
 	height = h;
 }
 
-//Returns true if Object a collides with calling object
-bool Object::IsColliding(Object a)
+/**
+Returns true if Object obstacle collides with this object
+*/
+bool Object::IsColliding(Object obstacle)
 {
-	//If any sides of a are outside calling object
-	if (a.GetBottom() <= Gety())
+	//If any sides of obstacle are outside this object
+	if (obstacle.GetBottom() <= Gety())
 	{
 		return false;
 	}
-	if (a.Gety() >= GetBottom())
+	if (obstacle.Gety() >= GetBottom())
 	{
 		return false;
 	}
-	if (a.GetRight() <= Getx())
+	if (obstacle.GetRight() <= Getx())
 	{
 		return false;
 	}
-	if (a.Getx() >= GetRight())
+	if (obstacle.Getx() >= GetRight())
 	{
 		return false;
 	}
 	
-	//If none of the sides of a are outside calling object,
+	//If none of the sides of obstacle are outside this object,
 	return true;
 }
 
-//The same as IsColliding(), expect it also returns true if two objects edges are adjacent
-bool Object::IsTouching(Object a)
+/**
+Returns true if Object obstacle collides with or is adjacent to this object
+*/
+bool Object::IsTouching(Object obstacle)
 {
-	//If any sides of a are outside calling object
-	if (a.GetBottom() < Gety())
+	//If any sides of obstacle are outside this object
+	if (obstacle.GetBottom() < Gety())
 	{
 		return false;
 	}
-	if (a.Gety() > GetBottom())
+	if (obstacle.Gety() > GetBottom())
 	{
 		return false;
 	}
-	if (a.GetRight() < Getx())
+	if (obstacle.GetRight() < Getx())
 	{
 		return false;
 	}
-	if (a.Getx() > GetRight())
+	if (obstacle.Getx() > GetRight())
 	{
 		return false;
 	}
 	
-	//If none of the sides of a are outside calling object,
+	//If none of the sides of obstacle are outside this object,
 	return true;
 }
 
-//Returns true if calling object is directly above object a
-bool Object::IsAbove(Object a)
+/**
+Returns true if this object is touching the top side of an Object obstacle
+*/
+bool Object::IsAbove(Object obstacle)
 {
-	if ((a.GetRight() > Getx()) && (a.Getx() < GetRight()) && IsTouching(a))
+	if (obstacle.GetRight() > Getx()
+		&& obstacle.Getx() < GetRight()
+		&& obstacle.GetBottom() > Gety()
+		&& IsTouching(obstacle))
 	{
 		return true;
 	}
 	return false;
 }
 
-//Moves object to coordinates (a, b)
+/**
+Returns true if this object is touching bottom side of an Object obstacle
+*/
+bool Object::IsBelow(Object obstacle)
+{
+	if (obstacle.GetRight() > Getx()
+		&& obstacle.Getx() < GetRight()
+		&& obstacle.Gety() < GetBottom()
+		&& IsTouching(obstacle))
+	{
+		return true;
+	}
+	return false;
+}
+
+/**
+Moves object to coordinates (a, b)
+*/
 void Object::Move(int a, int b)
 {
 	x = a;
 	y = b;
 }
 
-//Returns x-position of object
+/**
+Returns x-position of object
+*/
 int Object::Getx()
 {
 	return x;
 }
 
-//Returns y-position of object
+/**
+Returns y-position of object
+*/
 int Object::Gety()
 {
 	return y;
 }
 
-//Returns width of object
+/**
+Returns width of object
+*/
 int Object::GetWidth()
 {
 	return width;
 }
 
-//Returns height of object
+/**
+Returns height of object
+*/
 int Object::GetHeight()
 {
 	return height;
 }
 
-//Returns x-position of right hand edge of the Object
+/**
+Returns x-position of right hand edge of the Object
+*/
 int Object::GetRight()
 {
 	return x + width;
 }
 
-//Returns y-position of bottom edge of the Object
+/**
+Returns y-position of bottom edge of the Object
+*/
 int Object::GetBottom()
 {
 	return y + height;

@@ -1,13 +1,13 @@
 //main.cpp
 
-/*
+/**
 
 DECEPTIVE DIMENSIONS
 	A Quantum Conundrum Demake
 		Roy Mullay 2014
 	
 *** REFERENCES ***
-http://www.gamedev.net/page/resources/_/technical/game-programming/the-guide-to-implementing-2d-platformers-r2936
+http://higherorderfun.com/blog/2012/05/20/the-guide-to-implementing-2d-platformers/
 http://www.coranac.com/tonc/text/fixed.htm
 http://www.gameprogrammingpatterns.com/
 ******************
@@ -29,136 +29,169 @@ Clean-up:
 
 New features:
 
--Get player animation working
--Redraw player sprite
-	-Give player outline so it is clearer against background.
--Add more background graphics.
-	-Maybe ask whether Kirsteen can provide graphics
--Implement scrolling backgrounds
-	-Make player stay in middle of screen when moving around level.
--Implement Entities which can be picked up.
--Implement physics for moving platforms.
--Implement dimensions
 
 *******************
 
 *** CHANGE LOG ***
 	
-2014/04/30
--Added character sprite flipping
-	-Used a conditional bitmask variable to control it.
--Added in throwing functionality
-	-Can now throw cubes a short distance in direction currently facing by pressing R
-	-Had to move decel to Entity from Character
-		-Allows cubes to decelerate after being thrown
-	-Had to move the disassociation of cubes line outside the Drop() function
-		-Allows same usage in Throw()
--Added Pause feature
-	-Press start at any time to pause
--Made Buttons a struct rather than a class, since all members were public anyway
--Cleaned up a lot of the problems with bitshifting offsets
-	-Only one offset is applied when the axis is stepped
-	-Just to be sure, all the replaced code has been commented out rather than deleted
-		-There may be some stupid bug I have overlooked!
--Added IsCollidingLevel() to Entity as general check to see if an entity is colliding with anything
--General restructuring of classes
+2014/05/16
+-Introduced Doxygen style comments to classes and methods.
 
 */
 
-#include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
 #include "gba.h"
 #include "font.h"
-#include "sprite.h"
-//#include "spritesheet2.h"
-#include "background.h"
+#include "spritesheet4.h"
+#include "TitleScreen.h"
+#include "backgroundnewnew.h"
 #include "Object.h"
 #include "Entity.h"
 #include "Character.h"
 #include "Level.h"
 #include "Buttons.h"
+#include "DoorSwitch.h"
 
 //Function prototypes
-int Increment(int);
 void DrawText(int, int, const char[]);
-
-// A blank tile.
-// See the palette below for what the colour numbers mean.
-const uint8_t blank_tile[64] = {
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-};
 
 int main()
 {
 	// Set display options.
 	// DCNT_MODE0 sets mode 0, which provides four tiled backgrounds.
-	//   (But we've not actually turned any of them on... yet.)
 	// DCNT_OBJ enables objects.
 	// DCNT_OBJ_1D make object tiles mapped in 1D (which makes life easier).
-	REG_DISPCNT = DCNT_MODE0 | DCNT_BG0 | DCNT_BG1 | DCNT_OBJ;
+	REG_DISPCNT = DCNT_MODE0 | DCNT_BG0 | DCNT_BG1 | DCNT_BG2 | DCNT_OBJ;
 	
-	REG_BG0CNT = BG_CBB(0) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
-	REG_BG0HOFS = 0;
-	REG_BG0VOFS = 0;
+	REG_BG0CNT = BG_CBB(0) | BG_SBB(30) | BG_8BPP | BG_REG_32x32 | BG_PRIO(0);
 	
-	REG_BG1CNT = BG_CBB(0) | BG_SBB(29) | BG_8BPP | BG_REG_32x32;
-	REG_BG1HOFS = 0;
-	REG_BG1VOFS = 0;
-
-	// (Charblocks 4 and 5 are for object tiles;
-	// 8bpp tiles 0-255 are in CB 4, tiles 256-511 in CB 5.)
+	REG_BG1CNT = BG_CBB(0) | BG_SBB(29) | BG_8BPP | BG_REG_32x32 | BG_PRIO(1);
 	
-	//Custom spritesheet loading
-	LoadPaletteObjData(0, spritePal, sizeof spritePal);
-	//LoadPaletteObjData(0, spritesheet2Pal, sizeof spritesheet2Pal);
-	LoadPaletteBGData(0, backgroundPal, sizeof backgroundPal);
-	LoadTileData(4, 0, spriteTiles, sizeof spriteTiles);
-	//LoadTileData(4, 0, spritesheet2Tiles, sizeof spritesheet2Tiles);
-	LoadTileData(0, 0, backgroundTiles, sizeof backgroundTiles);
-
+	REG_BG2CNT = BG_CBB(0) | BG_SBB(25) | BG_8BPP | BG_REG_64x64 | BG_PRIO(2);
+	REG_BG2HOFS = 0;
+	REG_BG2VOFS = 0;
+	
 	ClearObjects();
 	
-	Level level1;
-	level1.Draw();
+	SetPaletteBG(1, RGB(31, 31, 31)); // white
+	
+	//Load each tile in font_bold into it's corresponding position in charblock 0
+	for (int i = 0; i < 128; i++)
+	{
+		LoadTile8(0, i, font_bold[i]);
+	}
+	
+	DrawText(5, (SCREEN_HEIGHT / 16) - 2, "DECEPTIVE DIMENSIONS");
+	DrawText(5, (SCREEN_HEIGHT / 16), "Press start to begin");
 	
 	Buttons buttons;
-
-	int frameCounter = 0;
+	int framecounter = 0;
 	
-	//Main loop
+	//Title screen (under construction)
 	while (true)
 	{
 		buttons.Update();
 		
-		level1.MoveObjects(buttons);
-		//level1.Draw();
-		level1.UpdateObjects();
-
-		frameCounter = Increment(frameCounter);
+		if (buttons.StartJustPressed())
+		{
+			break;
+		}
 		
-		WaitVSync();
-		FlipBuffers();
-		UpdateObjects();
+		WaitVSync();	
 	}
+	
+	while (true)
+	{
+		//Load Custom spritesheet
+		LoadPaletteObjData(0, spritesheet4Pal, sizeof spritesheet4Pal);
+		LoadPaletteBGData(0, backgroundnewnewPal, sizeof backgroundnewnewPal);
+		LoadTileData(4, 0, spritesheet4Tiles, sizeof spritesheet4Tiles);
+		LoadTileData(0, 0, backgroundnewnewTiles, sizeof backgroundnewnewTiles);
+		
+		int levelnumber = 1;
+		
+		Level level(levelnumber);
+		
+		for (int screenblock = 21; screenblock < 31; screenblock++)
+		{
+			level.FillScreenblock(screenblock, 0);
+		}
+		
+		level.DrawBackground(level.curdimension);
+		
+		bool gamerunning = true;
+		
+		//Main game loop
+		while (gamerunning)
+		{
+			buttons.Update();
+			
+			gamerunning = level.CheckIfLevelComplete();
+			level.TakeInput(buttons);
+			level.MoveObjects();
+			level.Draw();
+			level.UpdateLevelObjects(framecounter);
 
-	return 0;
+			framecounter++;
+			
+			WaitVSync();
+			FlipBuffers();
+		}
+		
+		//Reload each tile in font_bold into it's corresponding position in charblock 0
+		for (int i = 0; i < 128; i++)
+		{
+			LoadTile8(0, i, font_bold[i]);
+		}
+		
+		SetPaletteBG(0, RGB(0, 0, 0)); // black
+		SetPaletteBG(1, RGB(31, 31, 31)); // white		
+		
+		for (int screenblock = 25; screenblock < 31; screenblock++)
+		{
+			for (int y = 0; y < 32; y++)
+			{
+				for (int x = 0; x < 32; x++)
+				{
+					SetTile(screenblock, x, y, 0);
+				}
+			}
+		}
+		
+		level.player.drawx = SCREEN_WIDTH;
+		
+		SetObject(level.player.GetObjNum(),
+		  ATTR0_SHAPE(2) | ATTR0_8BPP | ATTR0_HIDE,
+		  ATTR1_SIZE(2) | ATTR1_X(level.player.drawx),
+		  ATTR2_ID8(0) | ATTR2_PRIO(2));
+		
+		UpdateObjects();
+		
+		DrawText(6, (SCREEN_HEIGHT / 16) - 2, "That's all folks!!");
+		DrawText(3, (SCREEN_HEIGHT / 16), "Press start to try again");
+		
+		while (true)
+		{
+			buttons.Update();
+			
+			if (buttons.StartJustPressed())
+			{
+				break;
+			}
+			
+			WaitVSync();
+		}
+	}
 }
 
-//Functions
-int Increment(int counter)
+/**
+Outputs string string to screen at position (x, y)
+*/
+void DrawText(int x, int y, const char string[])
 {
-	counter++;
-	if (counter % 60 == 0)
+	for (int i = 0; i < int(strlen(string)); i++)
 	{
-		counter = 0;
+		SetTile(30, x, y, string[i]);
+		x++;
 	}
-	return counter;
 }

@@ -26,9 +26,11 @@ OBJECTS = \
 	Level.o \
 	Entity.o \
 	Character.o \
+	DoorSwitch.o \
 	Buttons.o \
-	sprite.o \
-	background.o 
+	TitleScreen.o \
+	spritesheet4.o \
+	backgroundnewnew.o
 
 # The default target to make if none is specified.
 all: $(TARGET).gba
