@@ -28,7 +28,6 @@ OBJECTS = \
 	Character.o \
 	DoorSwitch.o \
 	Buttons.o \
-	TitleScreen.o \
 	spritesheet4.o \
 	backgroundnewnew.o
 

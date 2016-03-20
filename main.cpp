@@ -43,7 +43,7 @@ New features:
 #include "gba.h"
 #include "font.h"
 #include "spritesheet4.h"
-#include "TitleScreen.h"
+//#include "TitleScreen.h"
 #include "backgroundnewnew.h"
 #include "Object.h"
 #include "Entity.h"
